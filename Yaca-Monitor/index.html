@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<style type="text/css">
+			<!--
+			.main {	background: #2D2D2D; padding: 0px;}
+			.main_title { background-color: #2D2D2D; border-top: 8px solid #2D2D2D; color: #CCC;text-align: left;font: 18px Arial, sans-serif;font-weight: normal; height: 28px;left: 11px; right: 11px;opacity: 1;	position: absolute;	top: 0;}
+			.status_line { background-color: #2D2D2D; border-top: 8px solid #2D2D2D; color: #CCC;text-align: left; font: 10px Arial, sans-serif;font-weight: normal; height: 20px;left: 11px; right: 11px;opacity: 1;}
+			-->
+		</style>
+		<div class="main_title" align="right" id="loginPanel">Yet Another Call-graph Analysis Monitor 2.0 (Beta)</div>
+		<title>Yaca-Monitor</title>
+	</head>
+	
+	<body class="main">
+		<table align="left">
+			<tr valign="bottom">
+				<td valign="top" id="tabPanel">
+					<div valign="top" id="graphic-container"></div>
+				</td>
+					<td>
+					<div class="status_line" align="right" id="statusLine"></div>	
+				</td>
+			</tr>	
+			
+		</table>
+		<script type="text/javascript" src="lib/hashmap.js"></script>
+		<script type="text/javascript" src="lib/dat.gui.min.js"></script>
+		<script type="text/javascript" src="lib/detector.js"></script>
+		<script type="text/javascript" src="lib/three.min.js"></script>
+		<script type="text/javascript" src="lib/stats.min.js"></script>
+		<script type="text/javascript" src="lib/trackballcontrols.js"></script>
+		<script type="text/javascript" src="src/yaca.options.js"></script>
+		<script type="text/javascript" src="src/yaca.barnes_hut_simulator.js"></script>
+		<script type="text/javascript" src="src/yaca.n_node.js"></script>		
+		<script type="text/javascript" src="src/yaca.n_link.js"></script>		
+		<script type="text/javascript" src="src/yaca.multy_body_simulator.js"></script>		
+		<script type="text/javascript" src="src/yaca.options_dat_gui.js"></script>
+		<script type="text/javascript" src="src/yaca.moving_averager.js"></script>		
+		<script type="text/javascript" src="src/yaca.graphic_renderer.js"></script>
+		
+		</body>
+</html>
