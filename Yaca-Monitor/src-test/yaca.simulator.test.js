@@ -19,7 +19,7 @@ OctreeTest.prototype.testSumOfAllForcesShouldBeZero = function () {
         "z": -5
     }];
 
-    barnesHut = new BarnesHutAlgorithm.OctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.05, GRAVITY: 0});
+    barnesHut = new BarnesHutAlgorithmOctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.05, GRAVITY: 0});
     barnesHut.run(n);
 
     // sum of all forces should be zero
@@ -34,6 +34,7 @@ OctreeTest.prototype.testSumOfAllForcesShouldBeZero = function () {
     assertEquals(-19.51219512195122, n[2].force_y);
 };
 
+
 OctreeTest.prototype.testTooMuchLayers = function () {
     var n = [{
         "id": 2,
@@ -47,7 +48,7 @@ OctreeTest.prototype.testTooMuchLayers = function () {
         "z": 100
     }];
 
-    barnesHut = new BarnesHutAlgorithm.OctTree({ SPHERE_RADIUS: 160 ,SPHERE_RADIUS_MINIMUM : 10});
+    barnesHut = new BarnesHutAlgorithmOctTree({ SPHERE_RADIUS: 160 ,SPHERE_RADIUS_MINIMUM : 10});
     barnesHut.run(n);
 
     assertEquals(100, n[0].x);
@@ -78,7 +79,7 @@ OctreeTest.prototype.testManyNodesBarnesHutLargeTheta = function () {
             n.push(object);
         }
     }
-    barnesHut = new BarnesHutAlgorithm.OctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.8, GRAVITY: 0});
+    barnesHut = new BarnesHutAlgorithmOctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.8, GRAVITY: 0});
     barnesHut.run(n);
 
     sum_x = 0.0;
@@ -121,7 +122,7 @@ OctreeTest.prototype.testManyNodesBarnesHutSmallTheta = function () {
             n.push(object);
         }
     }
-    barnesHut = new BarnesHutAlgorithm.OctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.25, GRAVITY: 0});
+    barnesHut = new BarnesHutAlgorithmOctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.25, GRAVITY: 0});
     barnesHut.run(n);
 
     sum_x = 0.0;
@@ -166,7 +167,7 @@ OctreeTest.prototype.testManyNodesBruteForce = function () {
         }
     }
 
-    barnesHut = new BarnesHutAlgorithm.OctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.0, GRAVITY: 0});
+    barnesHut = new BarnesHutAlgorithmOctTree({ SPHERE_RADIUS: 1000 ,SPHERE_RADIUS_MINIMUM : 1.0, CHARGE: 1000 , THETA : 0.0, GRAVITY: 0});
     barnesHut.run(n);
 
     sum_x = 0.0;

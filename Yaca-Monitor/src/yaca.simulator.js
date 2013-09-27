@@ -144,6 +144,15 @@ NLink.prototype.isVisible = function() {
 	    && this.source.isVisible();
 };
 
+function initRandomPosition(node) {
+    var gamma = 2 * Math.PI * Math.random();
+    var delta = Math.PI * Math.random();
+    var radius = YACA_SimulationOptions.SPHERE_RADIUS * 0.95;
+    node.x = radius * Math.sin(delta) * Math.cos(gamma);
+    node.y = radius * Math.sin(delta) * Math.sin(gamma);
+    node.z = radius * Math.cos(delta);
+};
+
 /**
  * Implementation of Barnes-Hut algorithm for a three-dimensional simulation of
  * charge and gravity
@@ -169,15 +178,6 @@ BarnesHutAlgorithmOctTree = function(options) {
 	}
     }
 
-    BarnesHutAlgorithmOctTree.prototype.initRandomPosition = function(node) {
-	var gamma = 2 * Math.PI * Math.random();
-	var delta = Math.PI * Math.random();
-	var radius = YACA_SimulationOptions.SPHERE_RADIUS * 0.95;
-	node.x = radius * Math.sin(delta) * Math.cos(gamma);
-	node.y = radius * Math.sin(delta) * Math.sin(gamma);
-	node.z = radius * Math.cos(delta);
-    };
-
     BarnesHutAlgorithmOctTree.prototype.calcGravityForce = function(node) {
 	var deltaX = node.x;
 	var deltaY = node.y;
@@ -195,12 +195,12 @@ BarnesHutAlgorithmOctTree = function(options) {
 	YACA_OctTreeRoot = new BarnesHutAlgorithmOctNode(-size, size, -size, size, -size, size);
 	var node;
 	if (nodes.length > 1) {
-	    for ( var i = nodes.length - 1; i !== 0; i--) {
+	    for ( var i = 0; i < nodes.length; i++) {
 		node = nodes[i];
 		YACA_OctTreeRoot.addNode(node);
 	    }
 	    YACA_OctTreeRoot.calculateAveragesAndSumOfMass();
-	    for (i = nodes.length - 1; i !== 0; i--) {
+	    for ( i = 0; i < nodes.length; i++) {
 		node = nodes[i];
 		YACA_OctTreeRoot.calculateForces(node);
 		this.calcGravityForce(node);
@@ -228,12 +228,12 @@ BarnesHutAlgorithmOctNode = function(xMin, xMax, yMin, yMax, zMin, zMax) {
 
 BarnesHutAlgorithmOctNode.prototype.isFilled = function() {
     "use strict";
-    return (this.node !== null);
+    return (this.node != null);
 };
 
 BarnesHutAlgorithmOctNode.prototype.isParent = function() {
     "use strict";
-    return (this.children !== null);
+    return (this.children != null);
 };
 
 BarnesHutAlgorithmOctNode.prototype.isFitting = function(node) {
@@ -326,7 +326,7 @@ BarnesHutAlgorithmOctNode.prototype.addChildNode = function(node) {
 	}
     }
     // Unable to add node -> has to be relocated
-    BarnesHutAlgorithm.initRandomPosition(node);
+    initRandomPosition(node);
     YACA_OctTreeRoot.addNode(node);
 };
 
@@ -417,7 +417,7 @@ var NBodySimulator = function() {
 	    var newNode = nodes[i];
 	    var node;
 	    if (this.node_list.length <= newNode.id) {
-		this.octTree.initRandomPosition(newNode);
+		initRandomPosition(newNode);
 		node = new NNode(newNode);
 		this.node_list.push(node);
 	    } else {
@@ -498,7 +498,7 @@ var NBodySimulator = function() {
 	// Calculate link forces
 	var me = this;
 	this.link_list_visible.forEach(function(link) {
-	    if (link.source.id !== link.target.id) {
+	    if (link.source.id != link.target.id) {
 		me.calcLinkForce(link);
 	    }
 	});
