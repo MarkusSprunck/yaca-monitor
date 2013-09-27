@@ -32,11 +32,11 @@
  */
 var BORDER_RIGHT = 10;
 var BORDER_BOTTOM = 25;
-var HALF_PI = Math.PI * .5;
+var HALF_PI = Math.PI * 0.5;
 var TEXT_LENGTH = 800;
 var TEXT_HEIGHT = 20;
 var URL = "http:\\\\localhost:33333";
-var RUN_WEBGL_INTERVAL = 100;
+var RUN_WEBGL_INTERVAL = 200;
 
 /**
  * Global variables for rendering
@@ -56,44 +56,29 @@ var g_camera;
 var g_renderer;
 var g_control;
 var g_light;
-var g_filter = new RegExp(g_options.RUN_IMPORT_FILTER);
 var g_container;
-var g_simulator = new NBodySimulator();
 var g_colorHash = new HashMap();
-var g_averageWebGLUpdate = new MovingAverager(10);
 
 /**
  * Initializes the application
  */
 function initApplication() {
-    g_averageWebGLUpdate.setValue(RUN_WEBGL_INTERVAL);
+    "use strict";
+
     initWebGL();
     importAgentData(URL + "\\complete");
 
     g_updateTimerImport = setInterval(function() {
 	updateTimerImport();
-    }, g_options.RUN_IMPORT_INTERVAL);
+    }, YACA_SimulationOptions.RUN_IMPORT_INTERVAL);
 
     g_updateTimerWebGL = setInterval(function() {
-	// measure start time
-	start_time = new Date();
-
-	// do work...
-	g_simulator.applyFilter();
-	runSimulation();
-	updateWebGL(g_simulator.node_list_visible_last, g_simulator.link_list_visible_last);
-	updateWebGL(g_simulator.node_list_visible, g_simulator.link_list_visible);
+	YACA_NBodySimulator.applyFilter();
+	runSimulation(10);
+	updateWebGL(YACA_NBodySimulator.node_list_visible_last, YACA_NBodySimulator.link_list_visible_last);
+	updateWebGL(YACA_NBodySimulator.node_list_visible, YACA_NBodySimulator.link_list_visible);
 	renderer();
 	updateStatusLine();
-
-	// change time interval if needed
-	end_time = new Date();
-	g_averageWebGLUpdate.setValue(end_time - start_time);
-	smallerIntervall = RUN_WEBGL_INTERVAL < g_averageWebGLUpdate.getValue() * 1.8;
-	largerIntervall = RUN_WEBGL_INTERVAL > g_averageWebGLUpdate.getValue() * 2.2;
-	if (smallerIntervall || largerIntervall) {
-	    RUN_WEBGL_INTERVAL = 2 * Math.round(g_averageWebGLUpdate.getValue());
-	}
     }, RUN_WEBGL_INTERVAL);
 }
 
@@ -101,6 +86,7 @@ function initApplication() {
  * Initialize WebGL
  */
 function initWebGL() {
+    "use strict";
     // Container for WebGL rendering
     g_container = document.getElementById('graphic-container');
     g_container.style.background = "#000";
@@ -123,7 +109,7 @@ function initWebGL() {
 	g_renderer = new THREE.WebGLRenderer({
 	    antialias : true
 	});
-	g_renderer.setSize(g_panelWidthWebGL * devicePixelRatio, g_panelHeightWebGL * devicePixelRatio);
+	g_renderer.setSize(g_panelWidthWebGL, g_panelHeightWebGL);
     } else {
 	Detector.addGetWebGLMessage();
     }
@@ -131,13 +117,13 @@ function initWebGL() {
 
     // Create g_light front
     g_light = new THREE.SpotLight(0xffffff, 1.25);
-    g_light.position.set(g_options.SPHERE_RADIUS * 2, g_options.SPHERE_RADIUS * 2, 0);
+    g_light.position.set(YACA_SimulationOptions.SPHERE_RADIUS * 2, YACA_SimulationOptions.SPHERE_RADIUS * 2, 0);
     g_light.target.position.set(0, 0, 0);
     g_light.castShadow = true;
     g_scene.add(g_light);
 
     // Create light near the center
-    hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+    var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
     hemiLight.groundColor.setHSL(0.095, 1, 0.75);
     hemiLight.position.set(0, 200, 0);
     g_scene.add(hemiLight);
@@ -182,6 +168,7 @@ function initWebGL() {
  * Render WebGL with about 60 fames per second if possible
  */
 function animate() {
+    "use strict";
     requestAnimationFrame(animate);
     g_control.update();
     updateLightPosition();
@@ -189,6 +176,7 @@ function animate() {
 }
 
 function renderer() {
+    "use strict";
     g_renderer.render(g_scene, g_camera);
 }
 
@@ -199,13 +187,14 @@ function renderer() {
  * deleted.
  */
 function updateWebGL(nodes, links) {
+    "use strict";
     renderCubeWithDottedHiddenLines();
     if (nodes.length > 0 && links.length > 0) {
 	for ( var i = nodes.length; i != 0; i--) {
 	    renderNodeSphere(nodes[i - 1]);
 	    renderNodeLabel(nodes[i - 1]);
 	}
-	for ( var i = links.length; i != 0; i--) {
+	for (i = links.length; i != 0; i--) {
 	    renderArrowElementForLink(links[i - 1]);
 	}
     }
@@ -216,16 +205,17 @@ function updateWebGL(nodes, links) {
  * several times to make all hidden lines dotted and the visible lines solid.
  */
 function renderCubeWithDottedHiddenLines() {
-    if (typeof (g_cube_material_solid) != "undefined") {
+    "use strict";
+    if (typeof (g_cube_material_solid) !== "undefined") {
 	g_scene.remove(g_cube_material_solid);
 	g_scene.remove(g_cube_wireframe1);
 	g_scene.remove(g_cube_wireframe2);
 	g_scene.remove(g_cube_wireframe3);
     }
-    if (g_options.DISPLAY_CUBE) {
+    if (YACA_SimulationOptions.DISPLAY_CUBE) {
 
 	// Create geometries
-	var a = (g_options.SPHERE_RADIUS + g_options.SPHERE_RADIUS_MINIMUM) * 2;
+	var a = (YACA_SimulationOptions.SPHERE_RADIUS + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM) * 2;
 	var cube_geometry = new THREE.CubeGeometry(a, a, a);
 	var cube_geometry_wire = convertCubeGeometry2LineGeometry(cube_geometry);
 
@@ -274,6 +264,7 @@ function renderCubeWithDottedHiddenLines() {
  * Helper to create a line-geometry from a cube-geometry
  */
 function convertCubeGeometry2LineGeometry(input) {
+    "use strict";
     var geometry = new THREE.Geometry();
     var vertices = geometry.vertices;
     for ( var i = 0; i < input.faces.length; i += 2) {
@@ -294,6 +285,7 @@ function convertCubeGeometry2LineGeometry(input) {
  * Renders sphere for the node
  */
 function renderNodeSphere(node) {
+    "use strict";
     if (node.sphereCreated) {
 
 	// Update position
@@ -326,14 +318,15 @@ function renderNodeSphere(node) {
  * Renders the alias of the node
  */
 function renderNodeLabel(node) {
+    "use strict";
     if (node.textCreated) {
 
 	// Update orientation
-	node.text.visible = g_options.DISPLAY_NAMES && node.isVisible();
+	node.text.visible = YACA_SimulationOptions.DISPLAY_NAMES && node.isVisible();
 	if (node.text.visible) {
-	    node.text.position.x = node.x + g_options.SPHERE_RADIUS_MINIMUM * 1.1;
-	    node.text.position.y = node.y + g_options.SPHERE_RADIUS_MINIMUM * 1.1;
-	    node.text.position.z = node.z - g_options.SPHERE_RADIUS_MINIMUM * 1.1;
+	    node.text.position.x = node.x + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.1;
+	    node.text.position.y = node.y + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.1;
+	    node.text.position.z = node.z - YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.1;
 	    node.text.rotation.x = g_camera.rotation._x;
 	    node.text.rotation.y = g_camera.rotation._y;
 	    node.text.rotation.z = g_camera.rotation._z;
@@ -353,7 +346,7 @@ function renderNodeLabel(node) {
 	canvas.width = metrics.width;
 
 	// render text
-	var context = canvas.getContext('2d');
+	context = canvas.getContext('2d');
 	context.fillStyle = ('#' + getColorHex(node.clusterId));
 	context.font = '22px Arial';
 	context.textAlign = 'middle';
@@ -370,8 +363,8 @@ function renderNodeLabel(node) {
 	mat.map.needsUpdate = true;
 	node.text = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width, canvas.height), mat);
 	node.text.position.x = node.sphere.position.x + canvas.width;
-	node.text.position.y = node.sphere.position.y + g_options.SPHERE_RADIUS_MINIMUM;
-	node.text.position.z = node.sphere.position.z + g_options.SPHERE_RADIUS_MINIMUM;
+	node.text.position.y = node.sphere.position.y + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM;
+	node.text.position.z = node.sphere.position.z + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM;
 	node.text.dynamic = true;
 	node.text.doubleSided = true;
 	node.text.visible = false;
@@ -384,20 +377,19 @@ function renderNodeLabel(node) {
  * Renders a link - optional with arrow head
  */
 function renderArrowElementForLink(link) {
+    "use strict";
 
     // Center position of the nodes
-    source_position = new THREE.Vector3(link.source.x, link.source.y, link.source.z);
-    target_position = new THREE.Vector3(link.target.x, link.target.y, link.target.z);
+    var source_position = new THREE.Vector3(link.source.x, link.source.y, link.source.z);
+    var target_position = new THREE.Vector3(link.target.x, link.target.y, link.target.z);
 
     // Recursive link
     if (link.source.id == link.target.id) {
-	source_position.x += link.source.getRadius() * 4;
-	source_position.y += link.source.getRadius() * 4;
-	source_position.z += link.source.getRadius() * 4;
+	source_position.y += link.source.getRadius() * 8;
     }
 
     // Truncate the line
-    var isArrowVisible = link.isVisible() && g_options.DISPLAY_DIRECTIONS && !link.isClusterLink;
+    var isArrowVisible = link.isVisible() && YACA_SimulationOptions.DISPLAY_DIRECTIONS && !link.isClusterLink;
     var delta_target = (isArrowVisible) ? link.target.getRadius() * 2 : link.target.getRadius();
     moveEndPoints(source_position, link.source.getRadius(), target_position, delta_target);
     if (link.linkWebGLCreated) {
@@ -410,7 +402,7 @@ function renderArrowElementForLink(link) {
 
 	// Render arrow head
 	if (link.arrowCreated) {
-	    
+
 	    // Move arrow head
 	    link.arrow.visible = isArrowVisible;
 	    var direction = new THREE.Vector3().subVectors(source_position, target_position);
@@ -420,7 +412,7 @@ function renderArrowElementForLink(link) {
 	    link.arrow.rotation.z = arrow.rotation.z;
 	    link.arrow.position = new THREE.Vector3().addVectors(target_position, direction.multiplyScalar(0.5));
 	} else if (isArrowVisible) {
-	    
+
 	    // Create arrow head
 	    var material = new THREE.MeshLambertMaterial({
 		reflectivity : 0.9,
@@ -439,17 +431,17 @@ function renderArrowElementForLink(link) {
     } else {
 
 	// Create line
-	line_geometry = new THREE.Geometry();
+	var line_geometry = new THREE.Geometry();
 	line_geometry.vertices.push(source_position);
 	line_geometry.vertices.push(target_position);
-	line_material = new THREE.LineBasicMaterial({
+	var line_material = new THREE.LineBasicMaterial({
 	    depthTest : false,
 	    transparent : true,
 	    opacity : link.isClusterLink ? 0.3 : 1.0
 	});
 	line_material.color.setHex('0x' + getColorHex(link.source.clusterId));
 	line_material.transparent = true;
-	line = new THREE.Line(line_geometry, line_material);
+	var line = new THREE.Line(line_geometry, line_material);
 	line.visible = false;
 	link.threeElement = line;
 	link.linkWebGLCreated = true;
@@ -461,10 +453,11 @@ function renderArrowElementForLink(link) {
  * Truncate the end points of a line
  */
 function moveEndPoints(source_position, source_delta, target_position, target_delta) {
-    deltaX = (source_position.x - target_position.x);
-    deltaY = (source_position.y - target_position.y);
-    deltaZ = (source_position.z - target_position.z);
-    radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+    "use strict";
+    var deltaX = (source_position.x - target_position.x);
+    var deltaY = (source_position.y - target_position.y);
+    var deltaZ = (source_position.z - target_position.z);
+    var radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
     source_position.x -= (deltaX) / radius * (source_delta);
     source_position.y -= (deltaY) / radius * (source_delta);
     source_position.z -= (deltaZ) / radius * (source_delta);
@@ -478,6 +471,7 @@ function moveEndPoints(source_position, source_delta, target_position, target_de
  * graphic is done by movement of the camera and not the rotation of the scene
  */
 function updateLightPosition() {
+    "use strict";
     g_light.position.x = g_control.object.position.x - 500;
     g_light.position.y = g_control.object.position.y - 500;
     g_light.position.z = g_control.object.position.z;
@@ -485,9 +479,10 @@ function updateLightPosition() {
 }
 
 function resetCamera() {
+    "use strict";
     g_camera.position.x = 0.0;
     g_camera.position.y = 0.0;
-    g_camera.position.z = g_options.SPHERE_RADIUS * 4.5;
+    g_camera.position.z = YACA_SimulationOptions.SPHERE_RADIUS * 4.5;
     g_camera.lookAt(new THREE.Vector3(0, 0, 0));
 }
 
@@ -495,9 +490,10 @@ function resetCamera() {
  * Converts a integer to a two char hex code without 0x
  */
 function integerToHex(n) {
+    "use strict";
     n = Math.max(0, Math.min(parseInt(n, 10), 255));
-    charFirst = "0123456789ABCDEF".charAt((n - n % 16) / 16);
-    charSecond = "0123456789ABCDEF".charAt(n % 16);
+    var charFirst = "0123456789ABCDEF".charAt((n - n % 16) / 16);
+    var charSecond = "0123456789ABCDEF".charAt(n % 16);
     return charFirst + charSecond;
 }
 
@@ -505,7 +501,8 @@ function integerToHex(n) {
  * Helper for coloring the nodes and links
  */
 function getColorHex(value) {
-    key = 'c' + value;
+    "use strict";
+    var key = 'c' + value;
     if (null == g_colorHash.get(key)) {
 	var frequency = value * 0.5;
 	var red = Math.sin(frequency) * 127 + 127;
@@ -524,6 +521,7 @@ function getColorHex(value) {
  * [see http://en.wikipedia.org/wiki/JSONP]
  */
 function importAgentData(url) {
+    "use strict";
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
     script.id = 'JSONP';
@@ -539,41 +537,105 @@ function importAgentData(url) {
 	    }
 	}
     }, 10000);
-};
+}
 
 /**
  * Callback function for connection with agent. It takes the new model and
  * updates the model.
  */
 function yaca_agent_callback(input_model) {
-    g_simulator.updateModel(input_model);
+    "use strict";
+    YACA_NBodySimulator.updateModel(input_model);
 }
 
 /**
  * Update import and/or simulation
  */
 function updateTimerImport() {
-    if (g_options.RUN_IMPORT) {
+    "use strict";
+    if (YACA_SimulationOptions.RUN_IMPORT) {
 	importAgentData(URL + "\\complete");
     }
-};
+}
 
 /**
  * Optimization of the node position
  */
-function runSimulation() {
-    if (g_options.RUN_SIMULATION) {
-	g_simulator.simulateAllForces();
+function runSimulation(max_count) {
+    "use strict";
+    if (YACA_SimulationOptions.RUN_SIMULATION) {
+	for ( var count = 0; count < max_count; count++) {
+	    YACA_NBodySimulator.simulateAllForces();
+	}
     }
-};
+}
 
 /**
  * Output of status line
  */
 function updateStatusLine() {
-    stausLine = document.getElementById('statusLine');
-    stausLine.innerHTML = (' Nodes=' + g_simulator.node_list.length + ' (' + g_simulator.node_list_visible.length
-	    + ' active);' + ' Links=' + g_simulator.link_list.length + ' (' + g_simulator.link_list_visible.length + ' active)');
+    "use strict";
+    var stausLine = document.getElementById('statusLine');
+    stausLine.innerHTML = (' Nodes=' + YACA_NBodySimulator.node_list.length + ' ('
+	    + YACA_NBodySimulator.node_list_visible.length + ' active);' + ' Links='
+	    + YACA_NBodySimulator.link_list.length + ' (' + YACA_NBodySimulator.link_list_visible.length + ' active)');
+}
+
+/**
+ * User interface to change parameters
+ */
+function initDatGui(container) {
+    var gui = new dat.GUI({
+	autoPlace : false
+    });
+
+    f1 = gui.addFolder('Agent Connection');
+    f1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run');
+    f1.add(YACA_SimulationOptions, 'RUN_IMPORT_INTERVAL', 500, 10000).step(500).name('Interval [ms]').onChange(
+	    function(value) {
+		clearInterval(g_updateTimerImport);
+		g_updateTimerImport = setInterval(function() {
+		    updateTimerImport();
+		}, YACA_SimulationOptions.RUN_IMPORT_INTERVAL);
+	    });
+    ;
+    f1.open();
+
+    f2 = gui.addFolder('Filter');
+    f2.add(YACA_SimulationOptions, 'FILTER_CLUSTER').name('Cluster');
+    f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 0.0, 100.0).step(1.0).name('Activity Index');
+    f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Names').listen().onChange(function(value) {
+	YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
+    });
+    f2.open();
+
+    f3 = gui.addFolder('Simulation');
+    f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
+    f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(
+	    function(value) {
+		YACA_NBodySimulator.node_list.forEach(function(node) {
+		    YACA_NBodySimulator.scaleToBeInSphere(node);
+		});
+	    });
+    f3.add(YACA_SimulationOptions, 'CHARGE', 0, 1000).step(10.0).name('Charge');
+    f3.add(YACA_SimulationOptions, 'GRAVITY', 0, 2000).step(100.0).name('Gravity');
+    f3.add(YACA_SimulationOptions, 'DISTANCE', YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
+	    YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 20).step(10.0).name('Link Distance');
+    f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 20).step(1.0).name('Spring Link');
+    f3.open();
+
+    f2 = gui.addFolder('Display');
+    f2.add(YACA_SimulationOptions, 'DISPLAY_CUBE').name('Show Borders');
+    f2.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Show Names');
+    f2.add(YACA_SimulationOptions, 'DISPLAY_DIRECTIONS').name('Show Directions');
+    f2.open();
+
+    gui.domElement.style.position = 'absolute';
+    gui.domElement.style.right = '' + BORDER_RIGHT + 'px';
+    gui.domElement.style.top = '36px';
+    container.appendChild(gui.domElement);
+
+    return gui.domElement.offsetLeft;
 }
 
 /**
