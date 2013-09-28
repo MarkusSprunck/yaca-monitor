@@ -51,7 +51,7 @@ var g_cube_material_solid;
 var g_cube_wireframe1;
 var g_cube_wireframe2;
 var g_cube_wireframe3;
-//var g_stats;
+// var g_stats;
 var g_camera;
 var g_renderer;
 var g_control;
@@ -81,6 +81,8 @@ function initApplication() {
 	renderer();
 	updateStatusLine();
     }, RUN_WEBGL_INTERVAL);
+
+    loadDefultModel();
 }
 
 /**
@@ -149,11 +151,11 @@ function initWebGL() {
     window.addEventListener('resize', resizeCallback, false);
     resizeCallback();
 
-//    g_stats = new Stats();
-//    g_stats.domElement.style.position = 'absolute';
-//    g_stats.domElement.style.left = '11px';
-//    g_stats.domElement.style.top = '11px';
-//    g_container.appendChild(g_stats.domElement);
+    // g_stats = new Stats();
+    // g_stats.domElement.style.position = 'absolute';
+    // g_stats.domElement.style.left = '11px';
+    // g_stats.domElement.style.top = '11px';
+    // g_container.appendChild(g_stats.domElement);
 
     g_control = new THREE.TrackballControls(g_camera, g_renderer.domElement);
     g_control.target.set(0, 0, 0);
@@ -179,7 +181,7 @@ function animate() {
     requestAnimationFrame(animate);
     g_control.update();
     updateLightPosition();
-//    g_stats.update();
+    // g_stats.update();
 }
 
 function renderer() {
@@ -580,9 +582,9 @@ function runSimulation(max_count) {
 function updateStatusLine() {
     "use strict";
     var stausLine1 = document.getElementById('statusLine');
-    stausLine1.innerHTML = ('Active nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
-	    + YACA_NBodySimulator.node_list.length + ' imported) and active links '
-	    + YACA_NBodySimulator.link_list_visible.length + ' (' + YACA_NBodySimulator.link_list.length + ' imported)');
+    stausLine1.innerHTML = ('Acitve Nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
+	    + YACA_NBodySimulator.node_list.length + ') and Links ' + YACA_NBodySimulator.link_list_visible.length
+	    + ' (' + YACA_NBodySimulator.link_list.length + ')');
 }
 
 /**
@@ -594,20 +596,25 @@ function initDatGui(container) {
     });
 
     f1 = g_gui.addFolder('Agent Connection');
-    f1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run');
-//    f1.add(YACA_SimulationOptions, 'RUN_IMPORT_INTERVAL', 500, 10000).step(500).name('Interval [ms]').onChange(
-//	    function(value) {
-//		clearInterval(g_updateTimerImport);
-//		g_updateTimerImport = setInterval(function() {
-//		    updateTimerImport();
-//		}, YACA_SimulationOptions.RUN_IMPORT_INTERVAL);
-//	    });
+    f1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run Import').onChange(function(value) {
+	if (value) {
+	    yaca_agent_callback({
+		"nodes" : [],
+		"links" : []
+	    });
+	    YACA_NBodySimulator.node_list = [];
+	    YACA_NBodySimulator.link_list = [];
+	} else {
+	    loadDefultModel();
+	}
+
+    });
     f1.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Filter by Activity');
     f1.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Filter by Name').listen().onChange(function(value) {
 	YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
     });
     f1.open();
-  
+
     f3 = g_gui.addFolder('Simulation');
     f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
     f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(

@@ -45,7 +45,7 @@ function SimulationOptions() {
 	RUN_IMPORT_FILTER : "^((?!(Thread.run)).)*$",
 
 	// Parameters for rendering
-	RUN_IMPORT : true,
+	RUN_IMPORT : false,
 	RUN_IMPORT_INTERVAL : 2000,
 	FILTER_CLUSTER : true,
 	RUN_SIMULATION : true,
