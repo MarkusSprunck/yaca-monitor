@@ -105,7 +105,7 @@ NNode.prototype.getCalls = function() {
 
 NNode.prototype.isVisible = function() {
     "use strict";
-    return (this.getActivity() > YACA_SimulationOptions.RENDER_THRESHOLD) && this.isFiltered && !this.isClusterNode
+    return (this.getActivity() >= YACA_SimulationOptions.RENDER_THRESHOLD) && this.isFiltered && !this.isClusterNode
 	    || this.clusterIsVisible;
 };
 
@@ -117,7 +117,12 @@ NNode.prototype.getRadius = function() {
 
 NNode.prototype.getActivity = function() {
     "use strict";
-    return this.isClusterNode ? 0 : 101 * (Math.log(this.getCalls()) / Math.log(YACA_NBodySimulator.maxNodeCalls));
+    if (this.getCalls() > 0) {
+	return this.isClusterNode ? 0
+		: 100.0 * (Math.log(this.getCalls()) / Math.log(YACA_NBodySimulator.maxNodeCalls));
+    } else {
+	return 0.0;
+    }
 };
 
 /**
@@ -200,7 +205,7 @@ BarnesHutAlgorithmOctTree = function(options) {
 		YACA_OctTreeRoot.addNode(node);
 	    }
 	    YACA_OctTreeRoot.calculateAveragesAndSumOfMass();
-	    for ( i = 0; i < nodes.length; i++) {
+	    for (i = 0; i < nodes.length; i++) {
 		node = nodes[i];
 		YACA_OctTreeRoot.calculateForces(node);
 		this.calcGravityForce(node);

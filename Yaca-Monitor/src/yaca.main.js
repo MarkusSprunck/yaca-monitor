@@ -30,8 +30,8 @@
 /**
  * Global constants
  */
-var BORDER_RIGHT = 10;
-var BORDER_BOTTOM = 25;
+var BORDER_RIGHT = 155;
+var BORDER_BOTTOM = 30;
 var HALF_PI = Math.PI * 0.5;
 var TEXT_LENGTH = 800;
 var TEXT_HEIGHT = 20;
@@ -51,13 +51,14 @@ var g_cube_material_solid;
 var g_cube_wireframe1;
 var g_cube_wireframe2;
 var g_cube_wireframe3;
-var g_stats;
+//var g_stats;
 var g_camera;
 var g_renderer;
 var g_control;
 var g_light;
 var g_container;
 var g_colorHash = new HashMap();
+var g_gui;
 
 /**
  * Initializes the application
@@ -93,7 +94,7 @@ function initWebGL() {
 
     // Size of drawing
     g_panelHeightWebGL = window.outerHeight - BORDER_BOTTOM;
-    g_panelWidthWebGL = initDatGui(g_container) - BORDER_RIGHT * 2;
+    g_panelWidthWebGL = window.outerWidth - BORDER_RIGHT * 2; // 
     BORDER_RIGHT = window.innerWidth - g_panelWidthWebGL;
 
     // Create g_camera
@@ -114,6 +115,7 @@ function initWebGL() {
 	Detector.addGetWebGLMessage();
     }
     g_container.appendChild(g_renderer.domElement);
+    initDatGui(g_container);
 
     // Create g_light front
     g_light = new THREE.SpotLight(0xffffff, 1.25);
@@ -127,7 +129,6 @@ function initWebGL() {
     hemiLight.groundColor.setHSL(0.095, 1, 0.75);
     hemiLight.position.set(0, 200, 0);
     g_scene.add(hemiLight);
-    // g_scene.fog = new THREE.Fog(0xffffff, 1000, 20000);
     g_scene.fog = new THREE.FogExp2(0xffffff, 0.00005);
 
     // Support window resize
@@ -140,14 +141,20 @@ function initWebGL() {
 	g_renderer.domElement.style.height = g_panelHeightWebGL + 'px';
 	resetCamera();
 	g_camera.updateProjectionMatrix();
+
+	g_gui.domElement.style.position = 'absolute';
+	g_gui.domElement.style.left = '' + (g_panelWidthWebGL + 20) + 'px';
+	g_gui.domElement.style.top = '' + (document.getElementById('statusLine').offsetTop + 50) + 'px';
     };
     window.addEventListener('resize', resizeCallback, false);
     resizeCallback();
-    g_stats = new Stats();
-    g_stats.domElement.style.position = 'absolute';
-    g_stats.domElement.style.left = '11px';
-    g_stats.domElement.style.top = '36px';
-    g_container.appendChild(g_stats.domElement);
+
+//    g_stats = new Stats();
+//    g_stats.domElement.style.position = 'absolute';
+//    g_stats.domElement.style.left = '11px';
+//    g_stats.domElement.style.top = '11px';
+//    g_container.appendChild(g_stats.domElement);
+
     g_control = new THREE.TrackballControls(g_camera, g_renderer.domElement);
     g_control.target.set(0, 0, 0);
     g_control.rotateSpeed = 1.0;
@@ -172,7 +179,7 @@ function animate() {
     requestAnimationFrame(animate);
     g_control.update();
     updateLightPosition();
-    g_stats.update();
+//    g_stats.update();
 }
 
 function renderer() {
@@ -190,12 +197,12 @@ function updateWebGL(nodes, links) {
     "use strict";
     renderCubeWithDottedHiddenLines();
     if (nodes.length > 0 && links.length > 0) {
-	for ( var i = nodes.length; i != 0; i--) {
-	    renderNodeSphere(nodes[i - 1]);
-	    renderNodeLabel(nodes[i - 1]);
+	for ( var i = 0; i < nodes.length; i++) {
+	    renderNodeSphere(nodes[i]);
+	    renderNodeLabel(nodes[i]);
 	}
-	for (i = links.length; i != 0; i--) {
-	    renderArrowElementForLink(links[i - 1]);
+	for (i = 0; i < links.length; i++) {
+	    renderArrowElementForLink(links[i]);
 	}
     }
 }
@@ -324,12 +331,12 @@ function renderNodeLabel(node) {
 	// Update orientation
 	node.text.visible = YACA_SimulationOptions.DISPLAY_NAMES && node.isVisible();
 	if (node.text.visible) {
-	    node.text.position.x = node.x + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.1;
-	    node.text.position.y = node.y + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.1;
-	    node.text.position.z = node.z - YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.1;
 	    node.text.rotation.x = g_camera.rotation._x;
 	    node.text.rotation.y = g_camera.rotation._y;
 	    node.text.rotation.z = g_camera.rotation._z;
+	    node.text.position.x = node.x;
+	    node.text.position.y = node.y;
+	    node.text.position.z = node.z;
 	}
     } else {
 
@@ -349,7 +356,7 @@ function renderNodeLabel(node) {
 	context = canvas.getContext('2d');
 	context.fillStyle = ('#' + getColorHex(node.clusterId));
 	context.font = '22px Arial';
-	context.textAlign = 'middle';
+	context.textAlign = 'left';
 	context.fillText(node.alias, 0, TEXT_HEIGHT * 0.8);
 
 	// create 3d element
@@ -362,9 +369,6 @@ function renderNodeLabel(node) {
 	});
 	mat.map.needsUpdate = true;
 	node.text = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width, canvas.height), mat);
-	node.text.position.x = node.sphere.position.x + canvas.width;
-	node.text.position.y = node.sphere.position.y + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM;
-	node.text.position.z = node.sphere.position.z + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM;
 	node.text.dynamic = true;
 	node.text.doubleSided = true;
 	node.text.visible = false;
@@ -482,7 +486,7 @@ function resetCamera() {
     "use strict";
     g_camera.position.x = 0.0;
     g_camera.position.y = 0.0;
-    g_camera.position.z = YACA_SimulationOptions.SPHERE_RADIUS * 4.5;
+    g_camera.position.z = YACA_SimulationOptions.SPHERE_RADIUS * 3.9;
     g_camera.lookAt(new THREE.Vector3(0, 0, 0));
 }
 
@@ -575,41 +579,36 @@ function runSimulation(max_count) {
  */
 function updateStatusLine() {
     "use strict";
-    var stausLine = document.getElementById('statusLine');
-    stausLine.innerHTML = (' Nodes=' + YACA_NBodySimulator.node_list.length + ' ('
-	    + YACA_NBodySimulator.node_list_visible.length + ' active);' + ' Links='
-	    + YACA_NBodySimulator.link_list.length + ' (' + YACA_NBodySimulator.link_list_visible.length + ' active)');
+    var stausLine1 = document.getElementById('statusLine');
+    stausLine1.innerHTML = ('Active nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
+	    + YACA_NBodySimulator.node_list.length + ' imported) and active links '
+	    + YACA_NBodySimulator.link_list_visible.length + ' (' + YACA_NBodySimulator.link_list.length + ' imported)');
 }
 
 /**
  * User interface to change parameters
  */
 function initDatGui(container) {
-    var gui = new dat.GUI({
+    g_gui = new dat.GUI({
 	autoPlace : false
     });
 
-    f1 = gui.addFolder('Agent Connection');
+    f1 = g_gui.addFolder('Agent Connection');
     f1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run');
-    f1.add(YACA_SimulationOptions, 'RUN_IMPORT_INTERVAL', 500, 10000).step(500).name('Interval [ms]').onChange(
-	    function(value) {
-		clearInterval(g_updateTimerImport);
-		g_updateTimerImport = setInterval(function() {
-		    updateTimerImport();
-		}, YACA_SimulationOptions.RUN_IMPORT_INTERVAL);
-	    });
-    ;
-    f1.open();
-
-    f2 = gui.addFolder('Filter');
-    f2.add(YACA_SimulationOptions, 'FILTER_CLUSTER').name('Cluster');
-    f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 0.0, 100.0).step(1.0).name('Activity Index');
-    f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Names').listen().onChange(function(value) {
+//    f1.add(YACA_SimulationOptions, 'RUN_IMPORT_INTERVAL', 500, 10000).step(500).name('Interval [ms]').onChange(
+//	    function(value) {
+//		clearInterval(g_updateTimerImport);
+//		g_updateTimerImport = setInterval(function() {
+//		    updateTimerImport();
+//		}, YACA_SimulationOptions.RUN_IMPORT_INTERVAL);
+//	    });
+    f1.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Filter by Activity');
+    f1.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Filter by Name').listen().onChange(function(value) {
 	YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
     });
-    f2.open();
-
-    f3 = gui.addFolder('Simulation');
+    f1.open();
+  
+    f3 = g_gui.addFolder('Simulation');
     f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
     f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(
 	    function(value) {
@@ -617,25 +616,13 @@ function initDatGui(container) {
 		    YACA_NBodySimulator.scaleToBeInSphere(node);
 		});
 	    });
-    f3.add(YACA_SimulationOptions, 'CHARGE', 0, 1000).step(10.0).name('Charge');
-    f3.add(YACA_SimulationOptions, 'GRAVITY', 0, 2000).step(100.0).name('Gravity');
+    f3.add(YACA_SimulationOptions, 'CHARGE', 0, 3000).step(100.0).name('Charge');
     f3.add(YACA_SimulationOptions, 'DISTANCE', YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
-	    YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 20).step(10.0).name('Link Distance');
-    f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 20).step(1.0).name('Spring Link');
+	    YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 10).step(10.0).name('Link Distance');
+    f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 40).step(5.0).name('Spring Link');
     f3.open();
 
-    f2 = gui.addFolder('Display');
-    f2.add(YACA_SimulationOptions, 'DISPLAY_CUBE').name('Show Borders');
-    f2.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Show Names');
-    f2.add(YACA_SimulationOptions, 'DISPLAY_DIRECTIONS').name('Show Directions');
-    f2.open();
-
-    gui.domElement.style.position = 'absolute';
-    gui.domElement.style.right = '' + BORDER_RIGHT + 'px';
-    gui.domElement.style.top = '36px';
-    container.appendChild(gui.domElement);
-
-    return gui.domElement.offsetLeft;
+    container.appendChild(g_gui.domElement);
 }
 
 /**

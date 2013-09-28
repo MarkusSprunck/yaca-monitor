@@ -5,55 +5,73 @@
 <style type="text/css">
 <!--
 .main {
-	background: #2D2D2D;
+	background:  #000000;
 	padding: 0px;
 }
 
 .main_title {
-	background-color: #2D2D2D;
-	border-top: 8px solid #2D2D2D;
 	color: #CCC;
 	text-align: left;
-	font: 18px Arial, sans-serif;
+	font: 20px Helvetica, sans-serif;
 	font-weight: normal;
-	height: 28px;
-	left: 11px;
-	right: 11px;
-	opacity: 1;
-	position: absolute;
-	top: 0;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+}
+
+.text {
+	color: #CCC;
+	text-align: left;
+	font: 14px Helvetica, sans-serif;
+	font-weight: normal;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 8px;
 }
 
 .status_line {
-	background-color: #2D2D2D;
-	border-top: 8px solid #2D2D2D;
-	color: #CCC;
+	color: #3A3;
 	text-align: left;
-	font: 10px Arial, sans-serif;
-	font-weight: normal;
-	height: 20px;
-	left: 11px;
-	right: 11px;
-	opacity: 1;
+	font: 12px Helvetica, sans-serif;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+a {
+	color: #009de9;
+	font-family: Helvetica;
+	font-style: normal;
+	font-size: 10pt;
+	text-align: left;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 -->
 </style>
-<div class="main_title" align="right" id="loginPanel">Yet Another Call-graph Analysis Monitor (YACA)</div>
 <title>Yaca-Monitor</title>
 </head>
 
 <body class="main">
-	<table align="left">
-		<tr valign="bottom">
-			<td valign="top" id="tabPanel">
-				<div valign="top" id="graphic-container"></div>
+	<table>
+		<tr>
+			<td valign="top">
+				<div id="graphic-container"></div>
 			</td>
-			<td>
-				<div class="status_line" align="right" id="statusLine"></div>
+			<td valign="top">
+				<div class="main_title">Yet Another Call-graph Analysis
+					Monitor</div> <a
+				href="https://plus.google.com/u/0/117292523089281814301?rel=author">by
+					Markus Sprunck</a>
+				<div class="text">Lorem ipsum dolor sit amet, consetetur
+					sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+					et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
+					accusam et justo duo dolores et ea rebum. </div>
+				<p />
+				<div class="status_line" id="statusLine"></div>
 			</td>
 		</tr>
-
 	</table>
+
 	<script type="text/javascript" src="lib/hashmap.js"></script>
 	<script type="text/javascript" src="lib/dat.gui.min.js"></script>
 	<script type="text/javascript" src="lib/detector.js"></script>
