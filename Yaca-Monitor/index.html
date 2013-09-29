@@ -12,36 +12,42 @@
 .main_title {
 	color: #CCC;
 	text-align: left;
-	font: 20px Helvetica, sans-serif;
+	font: 17px 'Lucida Grande', sans-serif;
 	font-weight: normal;
 	padding-left: 10px;
 	padding-right: 10px;
-	padding-bottom: 10px;
+	padding-bottom: 4px;
 }
 
 .text {
 	color: #CCC;
 	text-align: left;
-	font: 12px Helvetica, sans-serif;
+	font: 12px 'Lucida Grande', sans-serif;
 	font-weight: normal;
 	padding-left: 10px;
 	padding-right: 10px;
-	padding-top: 8px;
+	padding-top: 4px;
 }
 
 .status_line {
-	color: #3A3;
+	color: #1ed36f;
 	text-align: left;
-	font: 12px Helvetica, sans-serif;
+	font: 12px 'Lucida Grande', sans-serif;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.status_line_warning {
+	color: #d36f1e;
+	text-align: left;
+	font: 12px 'Lucida Grande', sans-serif;
 	padding-left: 10px;
 	padding-right: 10px;
 }
 
 a {
 	color: #009de9;
-	font-family: Helvetica;
-	font-style: normal;
-	font-size: 10pt;
+	font: 12px 'Lucida Grande', sans-serif;
 	text-align: left;
 }
 -->
@@ -57,20 +63,23 @@ a {
 			</td>
 			<td valign="top">
 				<div class="main_title">Yet Another Call-graph Analysis
-					Monitor</div> <a style="padding-left: 10px"
+					Monitor 2.0</div> <a style="padding-left: 10px"
 				href="https://plus.google.com/u/0/117292523089281814301?rel=author">by
 					Markus Sprunck</a>
 				<div class="text">
-					This webGL experiment visualizes the method calls of running Java
-					applications. It can connect to a small agent (for this you have to start
-					on your local computer). This so called YacaAgent.jar connects to VM and
-					collects call stack information. Use up-to-date Chrome Browser for
-					best performance. The result is a dynamic call graph. You may read
-					more and get the source code <a
+					This small webGL experiment demonstrates how to visualize the
+					method calls of a running Java application. The web client connects
+					to a small agent software - for this you have to start on your
+					local computer. This so called YacaAgent is connected to a running
+					VM and collects call stack information of the running process.
+					Depending on the load of processes this happens hundert times per
+					second. The result is a live picture of the dynamic call . You may
+					read more and get the source code <a
 						href="http://www.sw-engineering-candies.com/blog-1/3d-webgl-visualization-of-call-stack-in-running-java-applications-with-three-js">here</a>.
 				</div>
 				<p />
-				<div class="status_line" id="statusLine"></div>
+				<div class="status_line" id="statusLine1"></div>
+				<div class="status_line_warning" id="statusLine2"></div>
 			</td>
 		</tr>
 	</table>

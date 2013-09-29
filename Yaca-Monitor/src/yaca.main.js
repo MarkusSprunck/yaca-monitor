@@ -30,7 +30,7 @@
 /**
  * Global constants
  */
-var BORDER_RIGHT = 155;
+var BORDER_RIGHT = 170;
 var BORDER_BOTTOM = 30;
 var HALF_PI = Math.PI * 0.5;
 var TEXT_LENGTH = 800;
@@ -50,7 +50,7 @@ var g_cube_material_solid;
 var g_cube_wireframe1;
 var g_cube_wireframe2;
 var g_cube_wireframe3;
-var g_stats;
+// var g_stats;
 var g_camera;
 var g_renderer;
 var g_control;
@@ -59,6 +59,7 @@ var g_container;
 var g_colorHash = new HashMap();
 var g_gui;
 var g_Message = '';
+var g_imported_data = false;
 
 /**
  * Initializes the application
@@ -110,7 +111,7 @@ function initWebGL() {
     // Create g_renderer
     if (Detector.webgl) {
 	g_renderer = new THREE.WebGLRenderer({
-	    antialias : true 
+	    antialias : true
 	});
     } else {
 	g_renderer = new THREE.CanvasRenderer();
@@ -147,16 +148,16 @@ function initWebGL() {
 
 	g_gui.domElement.style.position = 'absolute';
 	g_gui.domElement.style.left = '' + (g_panelWidthWebGL + 20) + 'px';
-	g_gui.domElement.style.top = '' + (document.getElementById('statusLine').offsetTop + 50) + 'px';
+	g_gui.domElement.style.top = '' + (document.getElementById('statusLine2').offsetTop + 50) + 'px';
     };
     window.addEventListener('resize', resizeCallback, false);
     resizeCallback();
 
-    g_stats = new Stats();
-    g_stats.domElement.style.position = 'absolute';
-    g_stats.domElement.style.left = '11px';
-    g_stats.domElement.style.top = '11px';
-    g_container.appendChild(g_stats.domElement);
+//    g_stats = new Stats();
+//    g_stats.domElement.style.position = 'absolute';
+//    g_stats.domElement.style.left = '11px';
+//    g_stats.domElement.style.top = '11px';
+//    g_container.appendChild(g_stats.domElement);
 
     g_control = new THREE.TrackballControls(g_camera, g_renderer.domElement);
     g_control.target.set(0, 0, 0);
@@ -182,7 +183,7 @@ function animate() {
     requestAnimationFrame(animate);
     g_control.update();
     updateLightPosition();
-    g_stats.update();
+//    g_stats.update();
 }
 
 function renderer() {
@@ -348,7 +349,7 @@ function renderNodeLabel(node) {
 
 	// get text width
 	var context = canvas.getContext('2d');
-	context.font = '22px Arial';
+	context.font = '22px "Lucida Grande", sans-serif';
 	context.textAlign = 'left';
 	var metrics = context.measureText(node.alias);
 	canvas.width = metrics.width;
@@ -356,7 +357,7 @@ function renderNodeLabel(node) {
 	// render text
 	context = canvas.getContext('2d');
 	context.fillStyle = ('#' + getColorHex(node.clusterId));
-	context.font = '22px Arial';
+	context.font = '22px "Lucida Grande", sans-serif';
 	context.textAlign = 'left';
 	context.fillText(node.alias, 0, TEXT_HEIGHT * 0.8);
 
@@ -580,11 +581,14 @@ function runSimulation(max_count) {
  */
 function updateStatusLine() {
     "use strict";
-    var stausLine1 = document.getElementById('statusLine');
-    var modelType = (YACA_SimulationOptions.RUN_IMPORT) ? 'Import from Agent. ' : 'Static default model. ';
-    stausLine1.innerHTML = (g_Message + modelType + 'Active Nodes ' + YACA_NBodySimulator.node_list_visible.length
-	    + ' (' + YACA_NBodySimulator.node_list.length + ') and Links '
-	    + YACA_NBodySimulator.link_list_visible.length + ' (' + YACA_NBodySimulator.link_list.length + ')');
+    var stausLine1 = document.getElementById('statusLine1');
+    stausLine1.innerHTML = ('Active Nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
+	    + YACA_NBodySimulator.node_list.length + ') and Links ' + YACA_NBodySimulator.link_list_visible.length
+	    + ' (' + YACA_NBodySimulator.link_list.length + ')');
+
+    var stausLine2 = document.getElementById('statusLine2');
+    var modelType = (g_imported_data) ? 'Data imported from YacaAgent' : 'Data static default model';
+    stausLine2.innerHTML = (g_Message + modelType);
 }
 
 /**
@@ -604,17 +608,15 @@ function initDatGui(container) {
 	    });
 	    YACA_NBodySimulator.node_list = [];
 	    YACA_NBodySimulator.link_list = [];
-	} else {
-	    loadDefultModel();
+	    g_imported_data = true;
 	}
-
     });
     f1.add(YACA_SimulationOptions, 'URL').name('Import URL');
     f1.open();
 
-    f2 = g_gui.addFolder('Filter');
-    f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Nodes by Activity');
-    f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Nodes by Name').listen().onChange(function(value) {
+    f2 = g_gui.addFolder('Filter Nodes by ... ');
+    f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Activity Index');
+    f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
 	YACA_NodeRegexFilter = new RegExp(value);
 	loadDefultModel();
     });
@@ -622,6 +624,9 @@ function initDatGui(container) {
 
     f3 = g_gui.addFolder('N-Body Simulation');
     f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
+    f3.add(YACA_SimulationOptions, 'DISTANCE', YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
+	    YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 10).step(10.0).name('Link Distance');
+    f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 40).step(5.0).name('Spring Link');
     f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(
 	    function(value) {
 		YACA_NBodySimulator.node_list.forEach(function(node) {
@@ -629,9 +634,6 @@ function initDatGui(container) {
 		});
 	    });
     f3.add(YACA_SimulationOptions, 'CHARGE', 0, 3000).step(100.0).name('Charge');
-    f3.add(YACA_SimulationOptions, 'DISTANCE', YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
-	    YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 10).step(10.0).name('Link Distance');
-    f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 40).step(5.0).name('Spring Link');
     f3.open();
 
     container.appendChild(g_gui.domElement);
