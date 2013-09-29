@@ -58,6 +58,7 @@ var g_light;
 var g_container;
 var g_colorHash = new HashMap();
 var g_gui;
+var g_Message = '';
 
 /**
  * Initializes the application
@@ -109,12 +110,13 @@ function initWebGL() {
     // Create g_renderer
     if (Detector.webgl) {
 	g_renderer = new THREE.WebGLRenderer({
-	    antialias : true
+	    antialias : true 
 	});
-	g_renderer.setSize(g_panelWidthWebGL, g_panelHeightWebGL);
     } else {
-	Detector.addGetWebGLMessage();
+	g_renderer = new THREE.CanvasRenderer();
+	g_Message = 'WebGL is not available in your browser. ';
     }
+    g_renderer.setSize(g_panelWidthWebGL, g_panelHeightWebGL);
     g_container.appendChild(g_renderer.domElement);
     initDatGui(g_container);
 
@@ -580,9 +582,9 @@ function updateStatusLine() {
     "use strict";
     var stausLine1 = document.getElementById('statusLine');
     var modelType = (YACA_SimulationOptions.RUN_IMPORT) ? 'Import from Agent. ' : 'Static default model. ';
-    stausLine1.innerHTML = (modelType + 'Active Nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
-	    + YACA_NBodySimulator.node_list.length + ') and Links ' + YACA_NBodySimulator.link_list_visible.length
-	    + ' (' + YACA_NBodySimulator.link_list.length + ')');
+    stausLine1.innerHTML = (g_Message + modelType + 'Active Nodes ' + YACA_NBodySimulator.node_list_visible.length
+	    + ' (' + YACA_NBodySimulator.node_list.length + ') and Links '
+	    + YACA_NBodySimulator.link_list_visible.length + ' (' + YACA_NBodySimulator.link_list.length + ')');
 }
 
 /**
