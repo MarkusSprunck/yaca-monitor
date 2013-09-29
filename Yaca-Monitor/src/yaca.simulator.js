@@ -42,7 +42,7 @@ function SimulationOptions() {
 	THETA : 0.8,
 	DISTANCE : 160,
 	SPRING : 20,
-	RUN_IMPORT_FILTER : '^((?!(java.lang.Thread.run)).)*$',
+	RUN_IMPORT_FILTER : '', // '^((?!(java.lang.Thread.run)).)*$',
 	URL:"http:\\\\localhost:33333",
 
 	// Parameters for rendering

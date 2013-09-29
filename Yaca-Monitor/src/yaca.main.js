@@ -595,7 +595,7 @@ function initDatGui(container) {
 	autoPlace : false
     });
 
-    f1 = g_gui.addFolder('Agent Connection');
+    f1 = g_gui.addFolder('YacaAgent Connection');
     f1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run Import').onChange(function(value) {
 	if (value) {
 	    yaca_agent_callback({
