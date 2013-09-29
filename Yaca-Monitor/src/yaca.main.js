@@ -35,7 +35,6 @@ var BORDER_BOTTOM = 30;
 var HALF_PI = Math.PI * 0.5;
 var TEXT_LENGTH = 800;
 var TEXT_HEIGHT = 20;
-var URL = "http:\\\\localhost:33333";
 var RUN_WEBGL_INTERVAL = 200;
 
 /**
@@ -51,7 +50,7 @@ var g_cube_material_solid;
 var g_cube_wireframe1;
 var g_cube_wireframe2;
 var g_cube_wireframe3;
-// var g_stats;
+var g_stats;
 var g_camera;
 var g_renderer;
 var g_control;
@@ -67,7 +66,7 @@ function initApplication() {
     "use strict";
 
     initWebGL();
-    importAgentData(URL + "\\complete");
+    importAgentData(YACA_SimulationOptions.URL + "\\complete");
 
     g_updateTimerImport = setInterval(function() {
 	updateTimerImport();
@@ -151,11 +150,11 @@ function initWebGL() {
     window.addEventListener('resize', resizeCallback, false);
     resizeCallback();
 
-    // g_stats = new Stats();
-    // g_stats.domElement.style.position = 'absolute';
-    // g_stats.domElement.style.left = '11px';
-    // g_stats.domElement.style.top = '11px';
-    // g_container.appendChild(g_stats.domElement);
+    g_stats = new Stats();
+    g_stats.domElement.style.position = 'absolute';
+    g_stats.domElement.style.left = '11px';
+    g_stats.domElement.style.top = '11px';
+    g_container.appendChild(g_stats.domElement);
 
     g_control = new THREE.TrackballControls(g_camera, g_renderer.domElement);
     g_control.target.set(0, 0, 0);
@@ -181,7 +180,7 @@ function animate() {
     requestAnimationFrame(animate);
     g_control.update();
     updateLightPosition();
-    // g_stats.update();
+    g_stats.update();
 }
 
 function renderer() {
@@ -198,14 +197,12 @@ function renderer() {
 function updateWebGL(nodes, links) {
     "use strict";
     renderCubeWithDottedHiddenLines();
-    if (nodes.length > 0 && links.length > 0) {
-	for ( var i = 0; i < nodes.length; i++) {
-	    renderNodeSphere(nodes[i]);
-	    renderNodeLabel(nodes[i]);
-	}
-	for (i = 0; i < links.length; i++) {
-	    renderArrowElementForLink(links[i]);
-	}
+    for ( var i = 0; i < nodes.length; i++) {
+	renderNodeSphere(nodes[i]);
+	renderNodeLabel(nodes[i]);
+    }
+    for (i = 0; i < links.length; i++) {
+	renderArrowElementForLink(links[i]);
     }
 }
 
@@ -560,7 +557,7 @@ function yaca_agent_callback(input_model) {
 function updateTimerImport() {
     "use strict";
     if (YACA_SimulationOptions.RUN_IMPORT) {
-	importAgentData(URL + "\\complete");
+	importAgentData(YACA_SimulationOptions.URL + "\\complete");
     }
 }
 
@@ -582,7 +579,8 @@ function runSimulation(max_count) {
 function updateStatusLine() {
     "use strict";
     var stausLine1 = document.getElementById('statusLine');
-    stausLine1.innerHTML = ('Acitve Nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
+    var modelType = (YACA_SimulationOptions.RUN_IMPORT) ? 'Import from Agent. ' : 'Static default model. ';
+    stausLine1.innerHTML = (modelType + 'Active Nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
 	    + YACA_NBodySimulator.node_list.length + ') and Links ' + YACA_NBodySimulator.link_list_visible.length
 	    + ' (' + YACA_NBodySimulator.link_list.length + ')');
 }
@@ -609,13 +607,18 @@ function initDatGui(container) {
 	}
 
     });
-    f1.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Filter by Activity');
-    f1.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Filter by Name').listen().onChange(function(value) {
-	YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
-    });
+    f1.add(YACA_SimulationOptions, 'URL').name('Import URL');
     f1.open();
 
-    f3 = g_gui.addFolder('Simulation');
+    f2 = g_gui.addFolder('Filter');
+    f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Nodes by Activity');
+    f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Nodes by Name').listen().onChange(function(value) {
+	YACA_NodeRegexFilter = new RegExp(value);
+	loadDefultModel();
+    });
+    f2.open();
+
+    f3 = g_gui.addFolder('N-Body Simulation');
     f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
     f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(
 	    function(value) {
