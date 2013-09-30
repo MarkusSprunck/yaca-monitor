@@ -1,4 +1,5 @@
 function loadDefultModel() {
+   
     yaca_agent_callback({
 	"nodes":[
 		{"id":0, "clusterId":0, "name":"java.lang.Object" , "alias":"java.lang", "calls": 0 , "isClusterNode" : true },

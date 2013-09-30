@@ -66,9 +66,9 @@ var g_imported_data = false;
  */
 function initApplication() {
     "use strict";
-
+    YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
+    loadDefultModel();
     initWebGL();
-    importAgentData(YACA_SimulationOptions.URL + "\\complete");
 
     g_updateTimerImport = setInterval(function() {
 	updateTimerImport();
@@ -83,7 +83,7 @@ function initApplication() {
 	updateStatusLine();
     }, RUN_WEBGL_INTERVAL);
 
-    loadDefultModel();
+ 
 }
 
 /**
