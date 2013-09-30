@@ -618,7 +618,9 @@ function initDatGui(container) {
     f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Activity Index');
     f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
 	YACA_NodeRegexFilter = new RegExp(value);
-	loadDefultModel();
+	if (!YACA_SimulationOptions.RUN_IMPORT) {
+	    loadDefultModel();
+	}
     });
     f2.open();
 
