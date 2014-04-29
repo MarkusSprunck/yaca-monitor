@@ -63,7 +63,7 @@ public class Agent {
 	/**
 	 * Port for this HTTP server
 	 */
-	private static int port;
+	private static int port = 33333;
 
 	/**
 	 * Connects to this process
