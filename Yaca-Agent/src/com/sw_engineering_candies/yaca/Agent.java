@@ -148,10 +148,9 @@ public class Agent {
 	// 3) Start dynamic code analysis
 	List<Integer> processIDs = JavaVMFinder.findOtherAttachableJavaVMs();
 	LOGGER.info("attachable process ids " + processIDs + NL);
-	if (null == processId && !processIDs.isEmpty()) {// take the first VM if
-							 // no other parameter
-							 // is given
-	    processId = processIDs.get(0).toString();
+	// take the last VM if no other parameter is given
+	if (null == processId && !processIDs.isEmpty()) {
+	    processId = processIDs.get(processIDs.size() - 1).toString();
 	}
 	if (null != processId) {
 	    final CallStackAnalyser analysisCallStack = new CallStackAnalyser(MODEL);

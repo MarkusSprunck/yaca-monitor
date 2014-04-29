@@ -35,8 +35,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
@@ -106,13 +104,6 @@ public class YacaAgentTestClient {
 		// show process id in the title bar
 		final String id = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
 		final JFrame frame = new JFrame("PID = " + id + " YacaAgentTest");
-
-		// Create file
-		final FileWriter fstream = new FileWriter("pid.txt");
-		final BufferedWriter out = new BufferedWriter(fstream);
-		out.write(id);
-		out.flush();
-		out.close();
 
 		buildContent(frame);
 		frame.setMinimumSize(new Dimension(300, 180));
