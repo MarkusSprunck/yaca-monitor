@@ -69,6 +69,7 @@ public class WebServer extends Thread {
 		this.model = model;
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public void run() {
 		Socket connection = null;

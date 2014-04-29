@@ -4,7 +4,7 @@ echo YACA-AGENT - STATIC AND DYNAMIC ANALYSIS
 echo.
 IF exist PID.TXT del PID.TXT
 
-set JAVA_HOME=C:\Tools\java\jdk1.6.0_43
+set JAVA_HOME=D:\Tools\java\jdk1.7.0
 set path=%JAVA_HOME%\bin;%path%
 
 REM Version of java is just printed for information
