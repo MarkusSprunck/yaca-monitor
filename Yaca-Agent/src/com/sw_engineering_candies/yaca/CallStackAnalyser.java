@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2014, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -27,8 +27,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-package com.sw_engineering_candies.yaca;
+ */package com.sw_engineering_candies.yaca;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,78 +49,101 @@ import com.sun.tools.attach.VirtualMachine;
  */
 public class CallStackAnalyser {
 
-	/**
-	 * Constants
-	 */
-	private static final Log LOGGER = LogFactory.getLog(CallStackAnalyser.class);
-	private static final String NL = System.getProperty("line.separator");
+    public static final String INVALID_PROCESS_ID = "----";
+    /**
+     * Constants
+     */
+    private static final Log LOGGER = LogFactory.getLog(CallStackAnalyser.class);
+    private static final String NL = System.getProperty("line.separator");
+    private static String processIdOld = INVALID_PROCESS_ID;
+    private static String processIdNew = INVALID_PROCESS_ID;
+    private static boolean isConnected = false;
 
-	/**
-	 * Model with data for export
-	 */
-	private final Model model;
+    public CallStackAnalyser() {
+    }
 
-	@SuppressWarnings("unused")
-	private CallStackAnalyser() {
-		this.model = null;
-	}
+    public synchronized void run() {
 
-	public CallStackAnalyser(final Model analyser) {
-		assert analyser != null : "Null is not allowed";
-		//
-		this.model = analyser;
-	}
+	LOGGER.info("start" + NL);
 
-	public void run(final String processId) {
-		assert processId != null : "Null is not allowed";
-		assert !processId.isEmpty() : "Empty is not allowed";
-		//
-		try {
-			LOGGER.info("start for process id " + processId + NL);
+	HotSpotVirtualMachine hsVm = null;
+	do {
 
-			final VirtualMachine vm = VirtualMachine.attach(processId);
-			final HotSpotVirtualMachine hsVm = (HotSpotVirtualMachine) vm;
-			do {
-				final List<Model.Item> entryList = new ArrayList<Model.Item>(10);
-				final InputStream in = hsVm.remoteDataDump(new Object[0]);
-				final BufferedReader br = new BufferedReader(new InputStreamReader(in));
-				String line = "";
-				while ((line = br.readLine()) != null) {
-					if (line.startsWith("\tat ")) {
-						final String temp2 = line.substring(4, line.lastIndexOf('('));
-						final String[] split = temp2.split("\\.");
-						if (split.length > 2) {
-							final Model.Item entry = model.new Item();
+	    try {
+		if (!processIdNew.equals(processIdOld)) {
+		    hsVm = (HotSpotVirtualMachine) VirtualMachine.attach(processIdNew);
+		    Agent.MODEL.setActiveProcess(processIdNew);
+		    Agent.MODEL.reset();
+		    isConnected = true;
+		    processIdOld = processIdNew;
 
-							final int indexOfMethodName = split.length - 1;
-							entry.setMethodName(split[indexOfMethodName]);
+		} else if (isConnected) {
+		    try {
+			final List<Model.Item> entryList = new ArrayList<Model.Item>(10);
+			final InputStream in = hsVm.remoteDataDump(new Object[0]);
+			final BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String line = "";
+			while ((line = br.readLine()) != null) {
+			    if (line.startsWith("\tat ")) {
+				final String temp2 = line.substring(4, line.lastIndexOf('('));
+				final String[] split = temp2.split("\\.");
+				if (split.length > 2) {
+				    final Model.Item entry = Agent.MODEL.new Item();
 
-							final int indexOfClassName = indexOfMethodName - 1;
-							entry.setClassName(split[indexOfClassName]);
+				    final int indexOfMethodName = split.length - 1;
+				    entry.setMethodName(split[indexOfMethodName]);
 
-							final StringBuffer packageName = new StringBuffer(line.length());
-							packageName.append(split[0]);
-							for (int i = 1; i < indexOfClassName; i++) {
-								packageName.append('.').append(split[i]);
-							}
-							entry.setPackageName(packageName.toString());
-							entry.setNewItem(true);
-							entryList.add(entry);
+				    final int indexOfClassName = indexOfMethodName - 1;
+				    entry.setClassName(split[indexOfClassName]);
 
-						} else {
-							LOGGER.warn("can't process line '" + line + "'" + NL);
-						}
-					}
+				    final StringBuffer packageName = new StringBuffer(line.length());
+				    packageName.append(split[0]);
+				    for (int i = 1; i < indexOfClassName; i++) {
+					packageName.append('.').append(split[i]);
+				    }
+				    entry.setPackageName(packageName.toString());
+				    entry.setNewItem(true);
+				    entryList.add(entry);
+
+				} else {
+				    LOGGER.warn("can't process line '" + line + "'" + NL);
 				}
-				model.append(entryList, true, true);
+			    }
+			}
+			Agent.MODEL.append(entryList, true, true);
 
-				br.close();
-				in.close();
-			} while (true);
-		} catch (final IOException e) {
-			LOGGER.error(e.getMessage() + NL);
-		} catch (final AttachNotSupportedException e) {
-			LOGGER.error(e.getMessage() + NL);
+			br.close();
+			in.close();
+
+		    } catch (final IOException e) {
+			LOGGER.error("IOException " + e.getMessage() + NL);
+			isConnected = false;
+			processIdOld = INVALID_PROCESS_ID;
+		    }
+		} else {
+		    // Nothing to do till the next request with a new process id
+		    try {
+			Thread.sleep(500);
+		    } catch (InterruptedException e) {
+		    }
 		}
-	}
+
+	    } catch (final AttachNotSupportedException e) {
+		if (isConnected) {
+		    LOGGER.error("AttachNotSupportedException " + e.getMessage() + NL);
+		}
+		Agent.MODEL.reset();
+		isConnected = false;
+		processIdOld = INVALID_PROCESS_ID;
+	    } catch (IOException e) {
+		LOGGER.error("IOException " + e.getMessage() + NL);
+		isConnected = false;
+		processIdOld = INVALID_PROCESS_ID;
+	    }
+	} while (true);
+    }
+
+    public synchronized static void setProcessNewID(String processIdNew) {
+	CallStackAnalyser.processIdNew = processIdNew;
+    }
 }

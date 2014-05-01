@@ -58,8 +58,11 @@ var g_light;
 var g_container;
 var g_colorHash = new HashMap();
 var g_gui;
+var g_gui_pid;
 var g_Message = '';
 var g_imported_data = false;
+var g_process_id_active = '0000';
+var g_old_pids = [];
 
 /**
  * Initializes the application
@@ -77,10 +80,8 @@ function initApplication() {
 	g_updateTimerWebGL = setInterval(function() {
 		YACA_NBodySimulator.applyFilter();
 		runSimulation(10);
-		updateWebGL(YACA_NBodySimulator.node_list_visible_last,
-				YACA_NBodySimulator.link_list_visible_last);
-		updateWebGL(YACA_NBodySimulator.node_list_visible,
-				YACA_NBodySimulator.link_list_visible);
+		updateWebGL(YACA_NBodySimulator.node_list_visible_last, YACA_NBodySimulator.link_list_visible_last);
+		updateWebGL(YACA_NBodySimulator.node_list_visible, YACA_NBodySimulator.link_list_visible);
 		renderer();
 		updateStatusLine();
 	}, RUN_WEBGL_INTERVAL);
@@ -102,8 +103,7 @@ function initWebGL() {
 	BORDER_RIGHT = window.innerWidth - g_panelWidthWebGL;
 
 	// Create g_camera
-	g_camera = new THREE.PerspectiveCamera(40, g_panelWidthWebGL
-			/ g_panelHeightWebGL, 1, 40000);
+	g_camera = new THREE.PerspectiveCamera(40, g_panelWidthWebGL / g_panelHeightWebGL, 1, 40000);
 	resetCamera();
 
 	// Create g_scene
@@ -125,8 +125,7 @@ function initWebGL() {
 
 	// Create g_light front
 	g_light = new THREE.SpotLight(0xffffff, 1.25);
-	g_light.position.set(YACA_SimulationOptions.SPHERE_RADIUS * 2,
-			YACA_SimulationOptions.SPHERE_RADIUS * 2, 0);
+	g_light.position.set(YACA_SimulationOptions.SPHERE_RADIUS * 2, YACA_SimulationOptions.SPHERE_RADIUS * 2, 0);
 	g_light.target.position.set(0, 0, 0);
 	g_light.castShadow = true;
 	g_scene.add(g_light);
@@ -143,8 +142,7 @@ function initWebGL() {
 		g_panelWidthWebGL = window.innerWidth - BORDER_RIGHT;
 		g_panelHeightWebGL = window.innerHeight - BORDER_BOTTOM;
 		var devicePixelRatio = window.devicePixelRatio || 1;
-		g_renderer.setSize(g_panelWidthWebGL * devicePixelRatio,
-				g_panelHeightWebGL * devicePixelRatio);
+		g_renderer.setSize(g_panelWidthWebGL * devicePixelRatio, g_panelHeightWebGL * devicePixelRatio);
 		g_renderer.domElement.style.width = g_panelWidthWebGL + 'px';
 		g_renderer.domElement.style.height = g_panelHeightWebGL + 'px';
 		resetCamera();
@@ -152,9 +150,7 @@ function initWebGL() {
 
 		g_gui.domElement.style.position = 'absolute';
 		g_gui.domElement.style.left = '' + (g_panelWidthWebGL + 20) + 'px';
-		g_gui.domElement.style.top = ''
-				+ (document.getElementById('statusLine2').offsetTop + 50)
-				+ 'px';
+		g_gui.domElement.style.top = '' + (document.getElementById('statusLine2').offsetTop + 50) + 'px';
 	};
 	window.addEventListener('resize', resizeCallback, false);
 	resizeCallback();
@@ -206,7 +202,7 @@ function renderer() {
 function updateWebGL(nodes, links) {
 	"use strict";
 
-	for ( var i = 0; i < nodes.length; i++) {
+	for (var i = 0; i < nodes.length; i++) {
 		renderNodeSphere(nodes[i]);
 		renderNodeLabel(nodes[i]);
 	}
@@ -238,8 +234,7 @@ function renderNodeSphere(node) {
 			transparent : false,
 			opacity : node.isClusterNode ? 0.2 : 1.0
 		});
-		node.sphere = new THREE.Mesh(
-				new THREE.SphereGeometry(node.getRadius()), material);
+		node.sphere = new THREE.Mesh(new THREE.SphereGeometry(node.getRadius()), material);
 		node.sphere.position.x = node.x;
 		node.sphere.position.z = node.z;
 		node.sphere.position.y = node.y;
@@ -257,15 +252,11 @@ function renderNodeLabel(node) {
 	if (node.textCreated) {
 
 		// Update orientation
-		node.text.visible = YACA_SimulationOptions.DISPLAY_NAMES
-				&& node.isVisible();
+		node.text.visible = YACA_SimulationOptions.DISPLAY_NAMES && node.isVisible();
 		if (node.text.visible) {
-			node.text.position.x = node.x
-					+ YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.5;
-			node.text.position.y = node.y
-					+ YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.5;
-			node.text.position.z = node.z
-					+ YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.5;
+			node.text.position.x = node.x + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.5;
+			node.text.position.y = node.y + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.5;
+			node.text.position.z = node.z + YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 1.5;
 			node.text.rotation.x = g_camera.rotation._x;
 			node.text.rotation.y = g_camera.rotation._y;
 			node.text.rotation.z = g_camera.rotation._z;
@@ -301,8 +292,7 @@ function renderNodeLabel(node) {
 			overdraw : true
 		});
 		mat.map.needsUpdate = true;
-		node.text = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width,
-				canvas.height), mat);
+		node.text = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width, canvas.height), mat);
 		node.text.dynamic = true;
 		node.text.doubleSided = true;
 		node.text.visible = false;
@@ -318,10 +308,8 @@ function renderArrowElementForLink(link) {
 	"use strict";
 
 	// Center position of the nodes
-	var source_position = new THREE.Vector3(link.source.x, link.source.y,
-			link.source.z);
-	var target_position = new THREE.Vector3(link.target.x, link.target.y,
-			link.target.z);
+	var source_position = new THREE.Vector3(link.source.x, link.source.y, link.source.z);
+	var target_position = new THREE.Vector3(link.target.x, link.target.y, link.target.z);
 
 	// Recursive link
 	if (link.source.id == link.target.id) {
@@ -329,12 +317,9 @@ function renderArrowElementForLink(link) {
 	}
 
 	// Truncate the line
-	var isArrowVisible = link.isVisible()
-			&& YACA_SimulationOptions.DISPLAY_DIRECTIONS && !link.isClusterLink;
-	var delta_target = (isArrowVisible) ? link.target.getRadius() * 2
-			: link.target.getRadius();
-	moveEndPoints(source_position, link.source.getRadius(), target_position,
-			delta_target);
+	var isArrowVisible = link.isVisible() && YACA_SimulationOptions.DISPLAY_DIRECTIONS && !link.isClusterLink;
+	var delta_target = (isArrowVisible) ? link.target.getRadius() * 2 : link.target.getRadius();
+	moveEndPoints(source_position, link.source.getRadius(), target_position, delta_target);
 	if (link.linkWebGLCreated) {
 
 		// Move existing line
@@ -348,15 +333,12 @@ function renderArrowElementForLink(link) {
 
 			// Move arrow head
 			link.arrow.visible = isArrowVisible;
-			var direction = new THREE.Vector3().subVectors(source_position,
-					target_position);
-			var arrow = new THREE.ArrowHelper(direction.normalize(),
-					target_position);
+			var direction = new THREE.Vector3().subVectors(source_position, target_position);
+			var arrow = new THREE.ArrowHelper(direction.normalize(), target_position);
 			link.arrow.rotation.x = arrow.rotation.x;
 			link.arrow.rotation.y = arrow.rotation.y;
 			link.arrow.rotation.z = arrow.rotation.z;
-			link.arrow.position = new THREE.Vector3().addVectors(
-					target_position, direction.multiplyScalar(0.5));
+			link.arrow.position = new THREE.Vector3().addVectors(target_position, direction.multiplyScalar(0.5));
 		} else if (isArrowVisible) {
 
 			// Create arrow head
@@ -366,8 +348,7 @@ function renderArrowElementForLink(link) {
 				depthTest : true
 			});
 			var arrowHeadLength = link.target.getRadius() * 2;
-			var cylinder = new THREE.CylinderGeometry(arrowHeadLength / 6, 0,
-					arrowHeadLength, 10, 4, false);
+			var cylinder = new THREE.CylinderGeometry(arrowHeadLength / 6, 0, arrowHeadLength, 10, 4, false);
 			material.color.setHex('0x' + getColorHex(link.source.clusterId));
 			link.arrow = new THREE.Mesh(cylinder, material);
 			link.arrowCreated = true;
@@ -395,8 +376,7 @@ function renderArrowElementForLink(link) {
 /**
  * Truncate the end points of a line
  */
-function moveEndPoints(source_position, source_delta, target_position,
-		target_delta) {
+function moveEndPoints(source_position, source_delta, target_position, target_delta) {
 	"use strict";
 	var deltaX = (source_position.x - target_position.x);
 	var deltaY = (source_position.y - target_position.y);
@@ -452,8 +432,7 @@ function getColorHex(value) {
 		var red = Math.sin(frequency) * 127 + 127;
 		var green = Math.sin(2 + frequency) * 127 + 127;
 		var blue = Math.sin(4 + frequency) * 127 + 127;
-		g_colorHash.put(key, '' + integerToHex(red) + integerToHex(green)
-				+ integerToHex(blue));
+		g_colorHash.put(key, '' + integerToHex(red) + integerToHex(green) + integerToHex(blue));
 	}
 	return g_colorHash.get(key);
 }
@@ -484,6 +463,17 @@ function importAgentData(url) {
 	}, 10000);
 }
 
+function arraysIdentical(a, b) {
+	var i = a.length;
+	if (i != b.length)
+		return false;
+	while (i--) {
+		if (a[i] !== b[i])
+			return false;
+	}
+	return true;
+};
+
 /**
  * Callback function for connection with agent. It takes the new model and
  * updates the model.
@@ -491,6 +481,25 @@ function importAgentData(url) {
 function yaca_agent_callback(input_model) {
 	"use strict";
 	YACA_NBodySimulator.updateModel(input_model);
+	if (typeof (input_model.process_id_active) !== "undefined") {
+		// 
+		if (!arraysIdentical(g_old_pids, input_model.process_id_available)) {
+			g_gui_folder1.remove(g_gui_pid);
+			g_gui_pid = g_gui_folder1.add(YACA_SimulationOptions, 'ACTIVE_PID', input_model.process_id_available).listen().name(
+					'Active PID').onChange(function(value) {
+			
+				yaca_agent_callback({
+					"nodes" : [],
+					"links" : []
+				});
+				YACA_NBodySimulator.node_list = [];
+				YACA_NBodySimulator.link_list = [];
+				
+			});
+
+			g_old_pids = input_model.process_id_available;
+		}
+	}
 }
 
 /**
@@ -499,7 +508,7 @@ function yaca_agent_callback(input_model) {
 function updateTimerImport() {
 	"use strict";
 	if (YACA_SimulationOptions.RUN_IMPORT) {
-		importAgentData(YACA_SimulationOptions.URL + "\\complete");
+		importAgentData(YACA_SimulationOptions.URL + "\\processes\\" + YACA_SimulationOptions.ACTIVE_PID);
 	}
 }
 
@@ -509,7 +518,7 @@ function updateTimerImport() {
 function runSimulation(max_count) {
 	"use strict";
 	if (YACA_SimulationOptions.RUN_SIMULATION) {
-		for ( var count = 0; count < max_count; count++) {
+		for (var count = 0; count < max_count; count++) {
 			YACA_NBodySimulator.simulateAllForces();
 		}
 	}
@@ -521,15 +530,12 @@ function runSimulation(max_count) {
 function updateStatusLine() {
 	"use strict";
 	var stausLine1 = document.getElementById('statusLine1');
-	stausLine1.innerHTML = ('Active Nodes '
-			+ YACA_NBodySimulator.node_list_visible.length + ' ('
-			+ YACA_NBodySimulator.node_list.length + ') and Links '
-			+ YACA_NBodySimulator.link_list_visible.length + ' ('
-			+ YACA_NBodySimulator.link_list.length + ')');
+	stausLine1.innerHTML = ('Active Nodes ' + YACA_NBodySimulator.node_list_visible.length + ' ('
+			+ YACA_NBodySimulator.node_list.length + ') and Links ' + YACA_NBodySimulator.link_list_visible.length
+			+ ' (' + YACA_NBodySimulator.link_list.length + ')');
 
 	var stausLine2 = document.getElementById('statusLine2');
-	var modelType = (g_imported_data) ? 'Data imported from YacaAgent (dynamic)'
-			: 'Default model (static)';
+	var modelType = (g_imported_data) ? 'Data imported from YacaAgent (dynamic)' : 'Default model (static)';
 	stausLine2.innerHTML = (g_Message + modelType);
 }
 
@@ -541,51 +547,46 @@ function initDatGui(container) {
 		autoPlace : false
 	});
 
-	f1 = g_gui.addFolder('General Options');
-	f1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run Import').onChange(
-			function(value) {
-				if (value) {
-					yaca_agent_callback({
-						"nodes" : [],
-						"links" : []
-					});
-					YACA_NBodySimulator.node_list = [];
-					YACA_NBodySimulator.link_list = [];
-					g_imported_data = true;
-				}
+	g_gui_folder1 = g_gui.addFolder('General Options');
+	g_gui_folder1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run Import').onChange(function(value) {
+		if (value) {
+			yaca_agent_callback({
+				"nodes" : [],
+				"links" : []
 			});
-	f1.add(YACA_SimulationOptions, 'URL').name('Import URL');
-	f1.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Show Names');
-	f1.open();
+			YACA_NBodySimulator.node_list = [];
+			YACA_NBodySimulator.link_list = [];
+			g_imported_data = true;
+		}
+	//	importAgentData(YACA_SimulationOptions.URL + "\\processes\\" + YACA_SimulationOptions.ACTIVE_PID);
+	});
+	g_gui_folder1.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Show Names');
+	g_gui_folder1.add(YACA_SimulationOptions, 'URL').name('Import URL');
+	g_gui_pid = g_gui_folder1.add(YACA_SimulationOptions, 'ACTIVE_PID').name('Active PID');
+	g_gui_folder1.open();
 
 	f2 = g_gui.addFolder('Filter Nodes by ... ');
-	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0)
-			.name('Activity Index');
-	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen()
-			.onChange(function(value) {
-				YACA_NodeRegexFilter = new RegExp(value);
-				if (!YACA_SimulationOptions.RUN_IMPORT) {
-					loadDefultModel();
-				}
-			});
+	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Activity Index');
+	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
+		YACA_NodeRegexFilter = new RegExp(value);
+		if (!YACA_SimulationOptions.RUN_IMPORT) {
+			loadDefultModel();
+		}
+	});
 	f2.open();
 
 	f3 = g_gui.addFolder('N-Body Simulation');
 	f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
-	f3.add(YACA_SimulationOptions, 'DISTANCE',
-			YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
-			YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 10).step(10.0).name(
-			'Link Distance');
-	f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 40).step(5.0).name(
-			'Spring Link');
-	f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0)
-			.name('Sphere Radius').onChange(function(value) {
+	f3.add(YACA_SimulationOptions, 'DISTANCE', YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
+			YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 10).step(10.0).name('Link Distance');
+	f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 40).step(5.0).name('Spring Link');
+	f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(
+			function(value) {
 				YACA_NBodySimulator.node_list.forEach(function(node) {
 					YACA_NBodySimulator.scaleToBeInSphere(node);
 				});
 			});
-	f3.add(YACA_SimulationOptions, 'CHARGE', 0, 3000).step(100.0)
-			.name('Charge');
+	f3.add(YACA_SimulationOptions, 'CHARGE', 0, 3000).step(100.0).name('Charge');
 	f3.open();
 
 	container.appendChild(g_gui.domElement);

@@ -22,7 +22,6 @@ public class JavaVMFinder {
     private static final Log LOGGER = LogFactory.getLog(JavaVMFinder.class);
     private static final String NL = System.getProperty("line.separator");
 
- 
     public static List<Integer> findOtherAttachableJavaVMs() {
 	List<Integer> result = new ArrayList<Integer>();
 
@@ -68,7 +67,7 @@ public class JavaVMFinder {
 	}
 	return result;
     }
-    
+
     public static void main(String[] args) throws Exception {
 	List<Integer> processIDs = findOtherAttachableJavaVMs();
 	System.out.println(processIDs);
