@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2014, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -48,90 +48,90 @@ import org.apache.commons.logging.LogFactory;
  */
 public class WebServer extends Thread {
 
-	/**
-	 * Constants
-	 */
-	private static final Log LOGGER = LogFactory.getLog(WebServer.class);
-	private static final String NL = System.getProperty("line.separator");
+    /**
+     * Constants
+     */
+    private static final Log LOGGER = LogFactory.getLog(WebServer.class);
+    private static final String NL = System.getProperty("line.separator");
 
-	/**
-	 * Port for this HTTP server
-	 */
-	private final int port;
+    /**
+     * Port for this HTTP server
+     */
+    private final int port;
 
-	/**
-	 * Model with data for export
-	 */
-	private final Model model;
+    public WebServer(final int port) {
+	this.port = port;
+    }
 
-	public WebServer(final int port, final Model model) {
-		this.port = port;
-		this.model = model;
-	}
+    @Override
+    public void run() {
+	Socket connection = null;
+	while (true) {
+	    try {
+		final ServerSocket server = new ServerSocket(port);
+		connection = server.accept();
+		final OutputStream out = new BufferedOutputStream(connection.getOutputStream());
+		final InputStream in = new BufferedInputStream(connection.getInputStream());
+		final String request = readFirstLineOfRequest(in).toString();
+		LOGGER.debug("get request " + request.toString() + NL);
 
-	@SuppressWarnings("resource")
-	@Override
-	public void run() {
-		Socket connection = null;
-		while (true) {
-			try {
-				final ServerSocket server = new ServerSocket(port);
-				connection = server.accept();
-				final OutputStream out = new BufferedOutputStream(connection.getOutputStream());
-				final InputStream in = new BufferedInputStream(connection.getInputStream());
-				final String request = readFirstLineOfRequest(in).toString();
-				LOGGER.debug("get request " + request.toString() + NL);
+		if (request.startsWith("GET /process")) {
 
-				if (request.startsWith("GET /complete")) {
+		    String newPID = request.substring(15, 19);
+		    try {
+			Integer.valueOf(newPID);
+			CallStackAnalyser.setProcessNewID(newPID);
+		    } catch (NumberFormatException ex) {
+			System.out.println("NumberFormatException " + ex.getMessage());
+		    }
 
-					// Create content of response
-					final StringBuffer jsonpModel = model.getJSONPModel();
-					ByteArrayOutputStream compressedString = compress(jsonpModel.toString());
+		    // Create content of response
+		    final StringBuffer jsonpModel = Agent.MODEL.getJSONPModel();
+		    ByteArrayOutputStream compressedString = compress(jsonpModel.toString());
 
-					// For HTTP/1.0 or later send a MIME header
-					if (request.indexOf("HTTP/1.1") != -1) {
-						final String headerString = "HTTP/1.1 200 OK" + NL
-								+ "Server: YacaAgent 2.0" + NL + "Content-Type: application/json"
-								+ NL + "Content-Encoding: gzip" + NL + "Content-Length: "
-								+ compressedString.size() + NL + NL;
-						final byte[] header = headerString.getBytes("UTF-8");
-						out.write(header);
-						out.write(compressedString.toByteArray());
-						out.flush();
-					}
-				} else if (request.startsWith("GET /terminate")) {
-					throw new RuntimeException("terminate");
-				}
-				// Close the socket
-				connection.close();
-				in.close();
-				out.close();
-				server.close();
-			} catch (final IOException e) {
-				LOGGER.error(e.getMessage() + NL);
-			}
+		    // For HTTP/1.0 or later send a MIME header
+		    if (request.indexOf("HTTP/1.1") != -1) {
+			final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL
+				+ "Content-Type: application/json" + NL + "Content-Encoding: gzip" + NL
+				+ "Content-Length: " + compressedString.size() + NL + NL;
+			final byte[] header = headerString.getBytes("UTF-8");
+			out.write(header);
+			out.write(compressedString.toByteArray());
+			out.flush();
+		    }
+		} else if (request.startsWith("GET /terminate")) {
+		    throw new RuntimeException("terminate");
 		}
+		// Close the socket
+		connection.close();
+		in.close();
+		out.close();
+		server.close();
+	    } catch (final IOException e) {
+		LOGGER.error(e.getMessage() + NL);
+	    }
 	}
+    }
 
-	public static ByteArrayOutputStream compress(String str) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		GZIPOutputStream gzip = new GZIPOutputStream(out);
-		gzip.write(str.getBytes("UTF-8"));
-		gzip.close();
-		return out;
-	}
+    public static ByteArrayOutputStream compress(String str) throws IOException {
+	ByteArrayOutputStream out = new ByteArrayOutputStream();
+	GZIPOutputStream gzip = new GZIPOutputStream(out);
+	gzip.write(str.getBytes("UTF-8"));
+	gzip.close();
+	return out;
+    }
 
-	private StringBuffer readFirstLineOfRequest(final InputStream in) throws IOException {
-		final StringBuffer request;
-		request = new StringBuffer(100);
-		while (true) {
-			final int character = in.read();
-			if ((character == '\n') || (character == '\r') || (character == -1)) {
-				break;
-			}
-			request.append((char) character);
-		}
-		return request;
+    private StringBuffer readFirstLineOfRequest(final InputStream in) throws IOException {
+	final StringBuffer request;
+	request = new StringBuffer(100);
+	while (true) {
+	    final int character = in.read();
+	    if ((character == '\n') || (character == '\r') || (character == -1)) {
+		break;
+	    }
+	    request.append((char) character);
 	}
+	return request;
+    }
 
 }

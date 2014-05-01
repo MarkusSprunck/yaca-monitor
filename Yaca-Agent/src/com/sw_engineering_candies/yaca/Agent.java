@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2014, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -32,7 +32,6 @@ package com.sw_engineering_candies.yaca;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -54,27 +53,22 @@ public class Agent {
     private static final Log LOGGER = LogFactory.getLog(Agent.class);
     private static final String NL = System.getProperty("line.separator");
     private static final String OPTION_PORT = "port";
-    private static final String OPTION_PROCESS_ID = "id";
     private static final String OPTION_HELP = "help";
     private static final String HELP_TEXT_SHOW_HELP = "Show help information.";
-    private static final String HELP_TEXT_PROCESS = "Mandatory parameter process id of JVM.";
     private static final String HELP_TEXT_PORT = "Mandatory parameter port for webserver.";
-    private static final Model MODEL = new Model();
+
+    public static final Model MODEL = new Model();
+
+    public static CallStackAnalyser analysisCallStack = new CallStackAnalyser();
 
     /**
      * Port for this HTTP server
      */
     private static int port = 33333;
 
-    /**
-     * Connects to this process
-     */
-    private static String processId;
-
     private static Options createCommandLineOptions() {
 	final Options options = new Options();
 	options.addOption(OPTION_PORT, true, HELP_TEXT_PORT);
-	options.addOption(OPTION_PROCESS_ID, true, HELP_TEXT_PROCESS);
 	options.addOption(OPTION_HELP, false, HELP_TEXT_SHOW_HELP);
 	return options;
     }
@@ -94,7 +88,7 @@ public class Agent {
 	    LOGGER.error(e.getMessage() + NL);
 	}
 	LOGGER.info("start for url: http:\\\\" + hostname + ':' + port + NL);
-	final Thread serverThread = new WebServer(port, MODEL);
+	final Thread serverThread = new WebServer(port);
 	serverThread.start();
     }
 
@@ -109,9 +103,6 @@ public class Agent {
 		LOGGER.error(e.getMessage() + NL);
 		throw new IllegalArgumentException();
 	    }
-	}
-	if ((null != cl) && cl.hasOption(OPTION_PROCESS_ID)) {
-	    processId = cl.getOptionValue(OPTION_PROCESS_ID);
 	}
     }
 
@@ -146,16 +137,7 @@ public class Agent {
 	startHTTPServer();
 
 	// 3) Start dynamic code analysis
-	List<Integer> processIDs = JavaVMFinder.findOtherAttachableJavaVMs();
-	LOGGER.info("attachable process ids " + processIDs + NL);
-	// take the last VM if no other parameter is given
-	if (null == processId && !processIDs.isEmpty()) {
-	    processId = processIDs.get(processIDs.size() - 1).toString();
-	}
-	if (null != processId) {
-	    final CallStackAnalyser analysisCallStack = new CallStackAnalyser(MODEL);
-	    analysisCallStack.run(processId);
-	}
+	analysisCallStack.run();
     }
 
 }

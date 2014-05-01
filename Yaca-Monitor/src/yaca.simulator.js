@@ -42,8 +42,9 @@ function SimulationOptions() {
 		THETA : 0.8,
 		DISTANCE : 160,
 		SPRING : 20,
-		RUN_IMPORT_FILTER : '^((?!(java.lang.Thread.run)).)*$',
+		RUN_IMPORT_FILTER : '', // '^((?!(java.lang.Thread.run)).)*$',
 		URL : "http:\\\\localhost:33333",
+		ACTIVE_PID : '----',
 
 		// Parameters for rendering
 		RUN_IMPORT : false,
@@ -106,8 +107,8 @@ NNode.prototype.getCalls = function() {
 
 NNode.prototype.isVisible = function() {
 	"use strict";
-	return (this.getActivity() >= YACA_SimulationOptions.RENDER_THRESHOLD)
-			&& this.isFiltered && !this.isClusterNode || this.clusterIsVisible;
+	return (this.getActivity() >= YACA_SimulationOptions.RENDER_THRESHOLD) && this.isFiltered && !this.isClusterNode
+			|| this.clusterIsVisible;
 };
 
 NNode.prototype.getRadius = function() {
@@ -120,8 +121,7 @@ NNode.prototype.getActivity = function() {
 	"use strict";
 	if (this.getCalls() > 0) {
 		return this.isClusterNode ? 0
-				: 100.0 * (Math.log(this.getCalls()) / Math
-						.log(YACA_NBodySimulator.maxNodeCalls));
+				: 100.0 * (Math.log(this.getCalls()) / Math.log(YACA_NBodySimulator.maxNodeCalls));
 	} else {
 		return 0.0;
 	}
@@ -147,8 +147,8 @@ function NLink(link, me) {
 
 NLink.prototype.isVisible = function() {
 	"use strict";
-	return this.source.isVisible() && this.target.isVisible()
-			|| this.target.clusterIsVisible && this.source.isVisible();
+	return this.source.isVisible() && this.target.isVisible() || this.target.clusterIsVisible
+			&& this.source.isVisible();
 };
 
 function initRandomPosition(node) {
@@ -189,25 +189,20 @@ BarnesHutAlgorithmOctTree = function(options) {
 		var deltaX = node.x;
 		var deltaY = node.y;
 		var deltaZ = node.z;
-		var radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ
-				* deltaZ);
+		var radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 		if (radius > YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 10) {
-			node.force_x -= (deltaX) / radius / radius
-					* YACA_SimulationOptions.GRAVITY;
-			node.force_y -= (deltaY) / radius / radius
-					* YACA_SimulationOptions.GRAVITY;
-			node.force_z -= (deltaZ) / radius / radius
-					* YACA_SimulationOptions.GRAVITY;
+			node.force_x -= (deltaX) / radius / radius * YACA_SimulationOptions.GRAVITY;
+			node.force_y -= (deltaY) / radius / radius * YACA_SimulationOptions.GRAVITY;
+			node.force_z -= (deltaZ) / radius / radius * YACA_SimulationOptions.GRAVITY;
 		}
 	};
 
 	BarnesHutAlgorithmOctTree.prototype.run = function(nodes) {
 		var size = YACA_SimulationOptions.SPHERE_RADIUS;
-		YACA_OctTreeRoot = new BarnesHutAlgorithmOctNode(-size, size, -size,
-				size, -size, size);
+		YACA_OctTreeRoot = new BarnesHutAlgorithmOctNode(-size, size, -size, size, -size, size);
 		var node;
 		if (nodes.length > 1) {
-			for ( var i = 0; i < nodes.length; i++) {
+			for (var i = 0; i < nodes.length; i++) {
 				node = nodes[i];
 				YACA_OctTreeRoot.addNode(node);
 			}
@@ -250,8 +245,7 @@ BarnesHutAlgorithmOctNode.prototype.isParent = function() {
 
 BarnesHutAlgorithmOctNode.prototype.isFitting = function(node) {
 	"use strict";
-	return ((node.x >= this.xMin) && (node.x <= this.xMax)
-			&& (node.y >= this.yMin) && (node.y <= this.yMax)
+	return ((node.x >= this.xMin) && (node.x <= this.xMax) && (node.y >= this.yMin) && (node.y <= this.yMax)
 			&& (node.z >= this.zMin) && (node.z <= this.zMax));
 };
 
@@ -260,10 +254,8 @@ BarnesHutAlgorithmOctNode.prototype.addNode = function(new_node) {
 	if (this.isFilled() || this.isParent()) {
 		var relocated_node;
 		if (YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM > this.diameter) {
-			var radius = Math.sqrt(new_node.x * new_node.x + new_node.y
-					* new_node.y + new_node.z * new_node.z);
-			var factor = (radius - YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM)
-					/ radius;
+			var radius = Math.sqrt(new_node.x * new_node.x + new_node.y * new_node.y + new_node.z * new_node.z);
+			var factor = (radius - YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM) / radius;
 			new_node.x *= factor;
 			new_node.y *= factor;
 			new_node.z *= factor;
@@ -284,22 +276,22 @@ BarnesHutAlgorithmOctNode.prototype.addNode = function(new_node) {
 
 			// create children
 			this.children = [];
-			this.children.push(new BarnesHutAlgorithmOctNode(xMiddle,
-					this.xMax, yMiddle, this.yMax, zMiddle, this.zMax));
-			this.children.push(new BarnesHutAlgorithmOctNode(this.xMin,
-					xMiddle, yMiddle, this.yMax, zMiddle, this.zMax));
-			this.children.push(new BarnesHutAlgorithmOctNode(this.xMin,
-					xMiddle, this.yMin, yMiddle, zMiddle, this.zMax));
-			this.children.push(new BarnesHutAlgorithmOctNode(xMiddle,
-					this.xMax, this.yMin, yMiddle, zMiddle, this.zMax));
-			this.children.push(new BarnesHutAlgorithmOctNode(xMiddle,
-					this.xMax, yMiddle, this.yMax, this.zMin, zMiddle));
-			this.children.push(new BarnesHutAlgorithmOctNode(this.xMin,
-					xMiddle, yMiddle, this.yMax, this.zMin, zMiddle));
-			this.children.push(new BarnesHutAlgorithmOctNode(this.xMin,
-					xMiddle, this.yMin, yMiddle, this.zMin, zMiddle));
-			this.children.push(new BarnesHutAlgorithmOctNode(xMiddle,
-					this.xMax, this.yMin, yMiddle, this.zMin, zMiddle));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax, yMiddle, this.yMax, zMiddle, this.zMax));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, yMiddle, this.yMax, zMiddle, this.zMax));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, this.yMin, yMiddle, zMiddle, this.zMax));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax, this.yMin, yMiddle, zMiddle, this.zMax));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax, yMiddle, this.yMax, this.zMin, zMiddle));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, yMiddle, this.yMax, this.zMin, zMiddle));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, this.yMin, yMiddle, this.zMin, zMiddle));
+			this.children
+					.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax, this.yMin, yMiddle, this.zMin, zMiddle));
 
 			// re-locate old node (add into children)
 			relocated_node = this.node;
@@ -332,7 +324,7 @@ BarnesHutAlgorithmOctNode.prototype.addNode = function(new_node) {
 BarnesHutAlgorithmOctNode.prototype.addChildNode = function(node) {
 	"use strict";
 	if (this.isParent()) {
-		for ( var index = 0; index < 8; index++) {
+		for (var index = 0; index < 8; index++) {
 			var child = this.children[index];
 			if (child.isFitting(node)) {
 				child.addNode(node);
@@ -359,19 +351,15 @@ BarnesHutAlgorithmOctNode.prototype.calculateForces = function(new_node) {
 			deltaZ = (this.sum_z / this.sum_mass - new_node.z);
 		}
 
-		var radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ
-				* deltaZ);
+		var radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 		var radius_squared = Math.pow((radius > 1e-6) ? radius : 1e-6, 2);
 		var treatInternalNodeAsSingleBody = this.diameter / radius < YACA_SimulationOptions.THETA;
 		if (this.isFilled() || treatInternalNodeAsSingleBody) {
-			new_node.force_x -= (deltaX * YACA_SimulationOptions.CHARGE)
-					/ radius_squared;
-			new_node.force_y -= (deltaY * YACA_SimulationOptions.CHARGE)
-					/ radius_squared;
-			new_node.force_z -= (deltaZ * YACA_SimulationOptions.CHARGE)
-					/ radius_squared;
+			new_node.force_x -= (deltaX * YACA_SimulationOptions.CHARGE) / radius_squared;
+			new_node.force_y -= (deltaY * YACA_SimulationOptions.CHARGE) / radius_squared;
+			new_node.force_z -= (deltaZ * YACA_SimulationOptions.CHARGE) / radius_squared;
 		} else if (this.isParent()) {
-			for ( var index = 0; index < 8; index++) {
+			for (var index = 0; index < 8; index++) {
 				var child = this.children[index];
 				if (child.isFilled() || this.isParent()) {
 					child.calculateForces(new_node);
@@ -385,7 +373,7 @@ BarnesHutAlgorithmOctNode.prototype.calculateAveragesAndSumOfMass = function() {
 	"use strict";
 	if (this.isParent()) {
 		var child;
-		for ( var index = 0; index < 8; index++) {
+		for (var index = 0; index < 8; index++) {
 			child = this.children[index];
 			child.calculateAveragesAndSumOfMass();
 		}
@@ -432,7 +420,7 @@ var NBodySimulator = function() {
 		// create or update nodes
 		this.maxNodeCalls = 0;
 		var nodes = input_model.nodes;
-		for ( var i = 0; i < nodes.length; i++) {
+		for (var i = 0; i < nodes.length; i++) {
 			var newNode = nodes[i];
 			var node;
 			if (this.node_list.length <= newNode.id) {
@@ -458,8 +446,7 @@ var NBodySimulator = function() {
 				link = this.link_list[newLink.id];
 			}
 			if (link.isClusterLink) {
-				link.target.clusterIsVisible = link.target.clusterIsVisible
-						|| link.source.isVisible()
+				link.target.clusterIsVisible = link.target.clusterIsVisible || link.source.isVisible()
 						&& !YACA_SimulationOptions.FILTER_CLUSTER;
 			}
 		}
@@ -540,11 +527,9 @@ var NBodySimulator = function() {
 		var deltaX = (link.source.x - link.target.x);
 		var deltaY = (link.source.y - link.target.y);
 		var deltaZ = (link.source.z - link.target.z);
-		var radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ
-				* deltaZ);
+		var radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 		if (radius > 1e-6) {
-			var factor = (radius - YACA_SimulationOptions.DISTANCE) / radius
-					/ radius * YACA_SimulationOptions.SPRING;
+			var factor = (radius - YACA_SimulationOptions.DISTANCE) / radius / radius * YACA_SimulationOptions.SPRING;
 			link.source.force_x -= (deltaX) * factor;
 			link.source.force_y -= (deltaY) * factor;
 			link.source.force_z -= (deltaZ) * factor;
@@ -559,27 +544,23 @@ var NBodySimulator = function() {
 	 * sphere would be ignored by OctTree (Barnes-Hut-Algorithm).
 	 */
 	NBodySimulator.prototype.scaleToBeInSphere = function(node) {
-		node.x = Math.min(Math.max(1 - YACA_SimulationOptions.SPHERE_RADIUS,
-				node.x), YACA_SimulationOptions.SPHERE_RADIUS - 1);
-		node.y = Math.min(Math.max(1 - YACA_SimulationOptions.SPHERE_RADIUS,
-				node.y), YACA_SimulationOptions.SPHERE_RADIUS - 1);
-		node.z = Math.min(Math.max(1 - YACA_SimulationOptions.SPHERE_RADIUS,
-				node.z), YACA_SimulationOptions.SPHERE_RADIUS - 1);
+		node.x = Math.min(Math.max(1 - YACA_SimulationOptions.SPHERE_RADIUS, node.x),
+				YACA_SimulationOptions.SPHERE_RADIUS - 1);
+		node.y = Math.min(Math.max(1 - YACA_SimulationOptions.SPHERE_RADIUS, node.y),
+				YACA_SimulationOptions.SPHERE_RADIUS - 1);
+		node.z = Math.min(Math.max(1 - YACA_SimulationOptions.SPHERE_RADIUS, node.z),
+				YACA_SimulationOptions.SPHERE_RADIUS - 1);
 	};
 
 	/**
 	 * Ensure that the new position is in the sphere
 	 */
 	NBodySimulator.prototype.scaleForceToBeSmall = function(node) {
-		var radius = Math.sqrt(node.force_x * node.force_x + node.force_y
-				* node.force_y + node.force_z * node.force_z);
+		var radius = Math.sqrt(node.force_x * node.force_x + node.force_y * node.force_y + node.force_z * node.force_z);
 		if (radius > YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM) {
-			node.force_x *= YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM
-					/ radius;
-			node.force_y *= YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM
-					/ radius;
-			node.force_z *= YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM
-					/ radius;
+			node.force_x *= YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM / radius;
+			node.force_y *= YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM / radius;
+			node.force_z *= YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM / radius;
 		}
 	};
 
