@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2013, Markus Sprunck
+ * Copyright (C) 2013-2014, Markus Sprunck
  *
  * All rights reserved.
  *
@@ -70,7 +70,7 @@ var g_old_pids = [];
 function initApplication() {
 	"use strict";
 	YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
-	loadDefultModel();
+	loadDefaultModel();
 	initWebGL();
 
 	g_updateTimerImport = setInterval(function() {
@@ -489,14 +489,10 @@ function yaca_agent_callback(input_model) {
 			}
 			g_gui_pid = g_gui_folder1.add(YACA_SimulationOptions, 'ACTIVE_PID', input_model.process_id_available)
 					.listen().name('Process ID').onChange(function(value) {
-
-						yaca_agent_callback({
-							"nodes" : [],
-							"links" : []
-						});
+						loadEmptyModel();
 						YACA_NBodySimulator.node_list = [];
 						YACA_NBodySimulator.link_list = [];
-
+						YACA_NBodySimulator.maxNodeCalls = 0;
 					});
 
 			if (YACA_SimulationOptions.ACTIVE_PID === "----") {
@@ -554,25 +550,21 @@ function initDatGui(container) {
 
 	g_gui_folder1 = g_gui.addFolder('General Options');
 	g_gui_folder1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run Import').onChange(function(value) {
-		if (value) {
-			yaca_agent_callback({
-				"nodes" : [],
-				"links" : []
-			});
-			YACA_NBodySimulator.node_list = [];
-			YACA_NBodySimulator.link_list = [];
-			g_imported_data = true;
-		}
+		loadEmptyModel();
+		YACA_NBodySimulator.node_list = [];
+		YACA_NBodySimulator.link_list = [];
+		YACA_NBodySimulator.maxNodeCalls = 0;
+		g_imported_data = true;
 	});
 	g_gui_folder1.add(YACA_SimulationOptions, 'URL').name('Import URL');
 	g_gui_folder1.open();
 
 	f2 = g_gui.addFolder('Filter Nodes by ... ');
-	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Activity Index');
+	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 0.0, 100.0).step(1.0).name('Activity Index');
 	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
 		YACA_NodeRegexFilter = new RegExp(value);
 		if (!YACA_SimulationOptions.RUN_IMPORT) {
-			loadDefultModel();
+			loadDefaultModel();
 		}
 	});
 	f2.open();

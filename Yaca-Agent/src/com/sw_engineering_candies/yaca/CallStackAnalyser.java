@@ -33,7 +33,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -128,7 +127,7 @@ public class CallStackAnalyser {
 		} else {
 		    // Nothing to do till the next request with a new process id
 		    try {
-			Thread.sleep(1000);
+			Thread.sleep(10);
 		    } catch (InterruptedException e) {
 		    }
 		}

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013, Markus Sprunck
+ * Copyright (C) 2013-2014, Markus Sprunck
  *
  * All rights reserved.
  *
@@ -42,7 +42,7 @@ function SimulationOptions() {
 		THETA : 0.8,
 		DISTANCE : 160,
 		SPRING : 20,
-		RUN_IMPORT_FILTER : '', // '^((?!(java.lang.Thread.run)).)*$',
+		RUN_IMPORT_FILTER : '^((?!(Thread.run)).)*$',
 		URL : "http:\\\\localhost:33333",
 		ACTIVE_PID : '----',
 
