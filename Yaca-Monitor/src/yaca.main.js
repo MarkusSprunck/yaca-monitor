@@ -497,6 +497,9 @@ function yaca_agent_callback(input_model) {
 				
 			});
 
+			if (YACA_SimulationOptions.ACTIVE_PID === "----") {
+				YACA_SimulationOptions.ACTIVE_PID = input_model.process_id_available[0];
+			}
 			g_old_pids = input_model.process_id_available;
 		}
 	}
