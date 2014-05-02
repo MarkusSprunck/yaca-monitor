@@ -484,18 +484,20 @@ function yaca_agent_callback(input_model) {
 	if (typeof (input_model.process_id_active) !== "undefined") {
 		// 
 		if (!arraysIdentical(g_old_pids, input_model.process_id_available)) {
-			g_gui_folder1.remove(g_gui_pid);
-			g_gui_pid = g_gui_folder1.add(YACA_SimulationOptions, 'ACTIVE_PID', input_model.process_id_available).listen().name(
-					'Active PID').onChange(function(value) {
-			
-				yaca_agent_callback({
-					"nodes" : [],
-					"links" : []
-				});
-				YACA_NBodySimulator.node_list = [];
-				YACA_NBodySimulator.link_list = [];
-				
-			});
+			if (typeof (g_gui_pid) !== "undefined") {
+				g_gui_folder1.remove(g_gui_pid);
+			}
+			g_gui_pid = g_gui_folder1.add(YACA_SimulationOptions, 'ACTIVE_PID', input_model.process_id_available)
+					.listen().name('Process ID').onChange(function(value) {
+
+						yaca_agent_callback({
+							"nodes" : [],
+							"links" : []
+						});
+						YACA_NBodySimulator.node_list = [];
+						YACA_NBodySimulator.link_list = [];
+
+					});
 
 			if (YACA_SimulationOptions.ACTIVE_PID === "----") {
 				YACA_SimulationOptions.ACTIVE_PID = input_model.process_id_available[0];
@@ -561,11 +563,8 @@ function initDatGui(container) {
 			YACA_NBodySimulator.link_list = [];
 			g_imported_data = true;
 		}
-	//	importAgentData(YACA_SimulationOptions.URL + "\\processes\\" + YACA_SimulationOptions.ACTIVE_PID);
 	});
-	g_gui_folder1.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Show Names');
 	g_gui_folder1.add(YACA_SimulationOptions, 'URL').name('Import URL');
-	g_gui_pid = g_gui_folder1.add(YACA_SimulationOptions, 'ACTIVE_PID').name('Active PID');
 	g_gui_folder1.open();
 
 	f2 = g_gui.addFolder('Filter Nodes by ... ');
