@@ -82,7 +82,7 @@ public class WebServer extends Thread {
 			Integer.valueOf(newPID);
 			CallStackAnalyser.setProcessNewID(newPID);
 		    } catch (NumberFormatException ex) {
-			System.out.println("NumberFormatException " + ex.getMessage());
+			// this can be ignored
 		    }
 
 		    // Create content of response
