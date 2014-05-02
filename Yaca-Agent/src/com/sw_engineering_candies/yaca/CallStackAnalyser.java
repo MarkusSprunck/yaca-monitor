@@ -156,39 +156,35 @@ public class CallStackAnalyser {
 	    VirtualMachineDescriptor descriptor = vmDesc.get(i);
 
 	    final String nextPID = descriptor.id();
-	    final String ownPID = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-	    if (!ownPID.equals(nextPID)) {
 
-		final StringBuilder message = new StringBuilder();
-		message.append("   pid=").append(nextPID).append(NL);
+	    final StringBuilder message = new StringBuilder();
+	    message.append("   pid=").append(nextPID).append(NL);
 
-		VirtualMachine vm;
-		try {
-		    vm = VirtualMachine.attach(descriptor);
+	    VirtualMachine vm;
+	    try {
+		vm = VirtualMachine.attach(descriptor);
 
-		    Properties props = vm.getSystemProperties();
-		    message.append("   java.version=").append(props.getProperty("java.version")).append(NL);
-		    message.append("   java.vendor=").append(props.getProperty("java.vendor")).append(NL);
-		    message.append("   java.home=").append(props.getProperty("java.home")).append(NL);
-		    message.append("   sun.arch.data.model=").append(props.getProperty("sun.arch.data.model"))
-			    .append(NL);
+		Properties props = vm.getSystemProperties();
+		message.append("   java.version=").append(props.getProperty("java.version")).append(NL);
+		message.append("   java.vendor=").append(props.getProperty("java.vendor")).append(NL);
+		message.append("   java.home=").append(props.getProperty("java.home")).append(NL);
+		message.append("   sun.arch.data.model=").append(props.getProperty("sun.arch.data.model")).append(NL);
 
-		    Properties properties = vm.getAgentProperties();
-		    Enumeration<Object> keys = properties.keys();
-		    while (keys.hasMoreElements()) {
-			Object elementKey = keys.nextElement();
-			message.append("   ").append(elementKey).append("=")
-				.append(properties.getProperty(elementKey.toString())).append(NL);
-		    }
-		    LOGGER.debug(message);
-		    vm.detach();
-
-		    result.add(Integer.parseInt(nextPID));
-		} catch (AttachNotSupportedException e) {
-		    LOGGER.error(e.getMessage());
-		} catch (IOException e) {
-		    LOGGER.error(e.getMessage());
+		Properties properties = vm.getAgentProperties();
+		Enumeration<Object> keys = properties.keys();
+		while (keys.hasMoreElements()) {
+		    Object elementKey = keys.nextElement();
+		    message.append("   ").append(elementKey).append("=")
+			    .append(properties.getProperty(elementKey.toString())).append(NL);
 		}
+		LOGGER.debug(message);
+		vm.detach();
+
+		result.add(Integer.parseInt(nextPID));
+	    } catch (AttachNotSupportedException e) {
+		LOGGER.error(e.getMessage());
+	    } catch (IOException e) {
+		LOGGER.error(e.getMessage());
 	    }
 	}
 	return result;
