@@ -73,7 +73,7 @@ public class WebServer extends Thread {
 		final OutputStream out = new BufferedOutputStream(connection.getOutputStream());
 		final InputStream in = new BufferedInputStream(connection.getInputStream());
 		final String request = readFirstLineOfRequest(in).toString();
-		LOGGER.debug("get request " + request.toString() + NL);
+		LOGGER.debug("get request " + request.toString());
 
 		if (request.startsWith("GET /process")) {
 
@@ -108,7 +108,7 @@ public class WebServer extends Thread {
 		out.close();
 		server.close();
 	    } catch (final IOException e) {
-		LOGGER.error(e.getMessage() + NL);
+		LOGGER.error(e.getMessage());
 	    }
 	}
     }

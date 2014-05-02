@@ -5,6 +5,7 @@
 	<classpathentry kind="lib" path="lib/asm-all-4.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="var" path="JDK_TOOLS"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

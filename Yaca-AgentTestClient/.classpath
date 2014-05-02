@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="lib/org.springframework.context-2.5.6.A.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.core-2.5.6.A.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.beans-2.5.6.A.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

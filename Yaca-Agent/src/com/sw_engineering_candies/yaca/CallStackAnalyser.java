@@ -68,13 +68,14 @@ public class CallStackAnalyser {
 
     public synchronized void run() {
 
-	LOGGER.info("start" + NL);
-
 	HotSpotVirtualMachine hsVm = null;
 	do {
 
 	    try {
-		if (!processIdNew.equals(processIdOld)) {
+		if (!processIdNew.equals(processIdOld)
+			&& findOtherAttachableJavaVMs().toString().contains(processIdNew)) {
+		    LOGGER.info("request change from pid=" + processIdOld + " to pid=" + processIdNew);
+
 		    hsVm = (HotSpotVirtualMachine) VirtualMachine.attach(processIdNew);
 		    Agent.MODEL.setActiveProcess(processIdNew);
 		    Agent.MODEL.reset();
@@ -110,7 +111,7 @@ public class CallStackAnalyser {
 				    entryList.add(entry);
 
 				} else {
-				    LOGGER.warn("can't process line '" + line + "'" + NL);
+				    LOGGER.warn("can't process line '" + line + "'");
 				}
 			    }
 			}
@@ -120,27 +121,27 @@ public class CallStackAnalyser {
 			in.close();
 
 		    } catch (final IOException e) {
-			LOGGER.error("IOException " + e.getMessage() + NL);
+			LOGGER.error("IOException " + e.getMessage());
 			isConnected = false;
 			processIdOld = INVALID_PROCESS_ID;
 		    }
 		} else {
 		    // Nothing to do till the next request with a new process id
 		    try {
-			Thread.sleep(500);
+			Thread.sleep(1000);
 		    } catch (InterruptedException e) {
 		    }
 		}
 
 	    } catch (final AttachNotSupportedException e) {
 		if (isConnected) {
-		    LOGGER.error("AttachNotSupportedException " + e.getMessage() + NL);
+		    LOGGER.error("AttachNotSupportedException " + e.getMessage());
 		}
 		Agent.MODEL.reset();
 		isConnected = false;
 		processIdOld = INVALID_PROCESS_ID;
 	    } catch (IOException e) {
-		LOGGER.error("IOException " + e.getMessage() + NL);
+		LOGGER.error("IOException " + e.getMessage());
 		isConnected = false;
 		processIdOld = INVALID_PROCESS_ID;
 	    }

@@ -233,10 +233,10 @@ public class Model {
     private void logStatistic() {
 	final StringBuffer message = new StringBuffer(200);
 	message.append("pid=").append(activeProcess);
-	message.append(", #clusters=").append(clusterIds.size());
-	message.append(", #nodes=").append(nodeIds.size());
-	message.append(", #links=").append(links.size());
-	LOGGER.info(message + NL);
+	message.append(", clusters=").append(clusterIds.size());
+	message.append(", nodes=").append(nodeIds.size());
+	message.append(", links=").append(links.size());
+	LOGGER.info(message);
     }
 
     private void add(final Item targetEntry, final Item sourceEntry, final boolean countNodes, final boolean countLinks) {

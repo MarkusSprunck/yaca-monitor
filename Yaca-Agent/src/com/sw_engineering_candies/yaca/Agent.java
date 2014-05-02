@@ -51,7 +51,6 @@ public class Agent {
      * Constants
      */
     private static final Log LOGGER = LogFactory.getLog(Agent.class);
-    private static final String NL = System.getProperty("line.separator");
     private static final String OPTION_PORT = "port";
     private static final String OPTION_HELP = "help";
     private static final String HELP_TEXT_SHOW_HELP = "Show help information.";
@@ -85,9 +84,9 @@ public class Agent {
 	    InetAddress addr = InetAddress.getLocalHost();
 	    hostname = addr.getCanonicalHostName();
 	} catch (UnknownHostException e) {
-	    LOGGER.error(e.getMessage() + NL);
+	    LOGGER.error(e.getMessage());
 	}
-	LOGGER.info("start for url: http:\\\\" + hostname + ':' + port + NL);
+	LOGGER.info("start for url: http:\\\\" + hostname + ':' + port);
 	final Thread serverThread = new WebServer(port);
 	serverThread.start();
     }
@@ -100,7 +99,7 @@ public class Agent {
 		    port = 8080;
 		}
 	    } catch (final NumberFormatException e) {
-		LOGGER.error(e.getMessage() + NL);
+		LOGGER.error(e.getMessage());
 		throw new IllegalArgumentException();
 	    }
 	}
@@ -108,16 +107,16 @@ public class Agent {
 
     public static void main(final String[] args) {
 
-	LOGGER.info("(c) 2012-2014 by Markus Sprunck, v2.1 - 27.04.2014" + NL);
+	LOGGER.info("(c) 2012-2014 by Markus Sprunck, v2.1 - 02.05.2014");
 
-	// 1) Parse command line and store parameter in attributes
+	// Parse command line and store parameter in attributes
 	final Parser commandlineparser = new PosixParser();
 	final Options options = createCommandLineOptions();
 	CommandLine cl = null;
 	try {
 	    cl = commandlineparser.parse(options, args, true);
 	} catch (final ParseException exp) {
-	    LOGGER.error("Unexpected exception:" + exp.getMessage() + NL);
+	    LOGGER.error("Unexpected exception:" + exp.getMessage());
 	}
 	try {
 	    if (null != cl) {
@@ -125,7 +124,7 @@ public class Agent {
 	    }
 	} catch (final IllegalArgumentException e) {
 	    outputCommandLineHelp(options);
-	    LOGGER.warn("Illegal arguments on command line: " + e.getMessage() + NL);
+	    LOGGER.warn("Illegal arguments on command line: " + e.getMessage());
 	    return;
 	}
 	if ((null != cl) && cl.hasOption(OPTION_HELP) && (args.length >= 4)) {
@@ -133,10 +132,10 @@ public class Agent {
 	    return;
 	}
 
-	// 2) Starts new thread for Http Server
+	// Starts new thread for Http Server
 	startHTTPServer();
 
-	// 3) Start dynamic code analysis
+	// Start dynamic code analysis
 	analysisCallStack.run();
     }
 
