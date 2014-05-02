@@ -182,7 +182,7 @@ public class Model {
 
 	fw.append("yaca_agent_callback({" + NL);
 
-	List<Integer> processIDs = JavaVMFinder.findOtherAttachableJavaVMs();
+	List<Integer> processIDs = CallStackAnalyser.findOtherAttachableJavaVMs();
 	fw.append("\"process_id_available\":[");
 	fw.append(NL);
 	boolean isFrist = true;
