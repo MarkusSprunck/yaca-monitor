@@ -70,7 +70,7 @@ var g_old_pids = [];
 function initApplication() {
 	"use strict";
 	YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
-	loadDefaultModel();
+	loadEmptyModel();
 	initWebGL();
 
 	g_updateTimerImport = setInterval(function() {
@@ -208,6 +208,28 @@ function updateWebGL(nodes, links) {
 	}
 	for (i = 0; i < links.length; i++) {
 		renderArrowElementForLink(links[i]);
+	}
+}
+
+/**
+ * Delete THRRE.js elements of the webGL graphic.
+ */
+function deleteWebGL(nodes, links) {
+	"use strict";
+
+	for (var i = 0; i < nodes.length; i++) {
+		if (nodes[i].sphereCreated) {
+			g_scene.remove(nodes[i].sphere);
+			g_scene.remove(nodes[i].text);
+		}
+		;
+	}
+	for (i = 0; i < links.length; i++) {
+		if (links[i].linkWebGLCreated) {
+			g_scene.remove(links[i].arrow);
+			g_scene.remove(links[i].threeElement);
+		}
+		;
 	}
 }
 
@@ -480,7 +502,9 @@ function arraysIdentical(a, b) {
  */
 function yaca_agent_callback(input_model) {
 	"use strict";
+	
 	YACA_NBodySimulator.updateModel(input_model);
+	
 	if (typeof (input_model.process_id_active) !== "undefined") {
 		// 
 		if (!arraysIdentical(g_old_pids, input_model.process_id_available)) {
@@ -489,10 +513,13 @@ function yaca_agent_callback(input_model) {
 			}
 			g_gui_pid = g_gui_folder1.add(YACA_SimulationOptions, 'ACTIVE_PID', input_model.process_id_available)
 					.listen().name('Process ID').onChange(function(value) {
-						loadEmptyModel();
-						YACA_NBodySimulator.node_list = [];
-						YACA_NBodySimulator.link_list = [];
-						YACA_NBodySimulator.maxNodeCalls = 0;
+						if (value) {
+							deleteWebGL(YACA_NBodySimulator.node_list, YACA_NBodySimulator.link_list);
+							YACA_NBodySimulator.node_list = [];
+							YACA_NBodySimulator.link_list = [];
+							loadEmptyModel();
+							YACA_NBodySimulator.maxNodeCalls = 0;
+						}
 					});
 
 			if (YACA_SimulationOptions.ACTIVE_PID === "----") {
@@ -501,6 +528,8 @@ function yaca_agent_callback(input_model) {
 			g_old_pids = input_model.process_id_available;
 		}
 	}
+
+	
 }
 
 /**
@@ -550,10 +579,6 @@ function initDatGui(container) {
 
 	g_gui_folder1 = g_gui.addFolder('General Options');
 	g_gui_folder1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run Import').onChange(function(value) {
-		loadEmptyModel();
-		YACA_NBodySimulator.node_list = [];
-		YACA_NBodySimulator.link_list = [];
-		YACA_NBodySimulator.maxNodeCalls = 0;
 		g_imported_data = true;
 	});
 	g_gui_folder1.add(YACA_SimulationOptions, 'URL').name('Import URL');
@@ -563,9 +588,6 @@ function initDatGui(container) {
 	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 0.0, 100.0).step(1.0).name('Activity Index');
 	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
 		YACA_NodeRegexFilter = new RegExp(value);
-		if (!YACA_SimulationOptions.RUN_IMPORT) {
-			loadDefaultModel();
-		}
 	});
 	f2.open();
 
@@ -581,7 +603,6 @@ function initDatGui(container) {
 				});
 			});
 	f3.add(YACA_SimulationOptions, 'CHARGE', 0, 3000).step(100.0).name('Charge');
-	f3.open();
 
 	container.appendChild(g_gui.domElement);
 }
