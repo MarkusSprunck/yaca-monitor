@@ -42,19 +42,19 @@ function SimulationOptions() {
 		THETA : 0.8,
 		DISTANCE : 160,
 		SPRING : 20,
-		RUN_IMPORT_FILTER : '', // '^((?!(Thread.run)).)*$',
+		RUN_IMPORT_FILTER : '^((?!(Thread.run)).)*$',
 		URL : "http:\\\\localhost:33333",
 		ACTIVE_PID : '----',
 
 		// Parameters for rendering
 		RUN_IMPORT : true,
 		RUN_IMPORT_INTERVAL : 3000,
-		FILTER_CLUSTER : true,
+		DISPLAY_CLUSTER : false,
 		RUN_SIMULATION : true,
 		DISPLAY_DIRECTIONS : true,
-		DISPLAY_CUBE : true,
 		DISPLAY_NAMES : true,
-		RENDER_THRESHOLD : 15.0
+		RENDER_THRESHOLD : 15.0,
+		RENDER_INACTIVE : false
 	};
 }
 
@@ -107,7 +107,7 @@ NNode.prototype.getCalls = function() {
 
 NNode.prototype.isVisible = function() {
 	"use strict";
-	return (this.getActivity() >= YACA_SimulationOptions.RENDER_THRESHOLD) && this.isFiltered && !this.isClusterNode
+	return (YACA_SimulationOptions.RENDER_INACTIVE || this.getActivity() >= YACA_SimulationOptions.RENDER_THRESHOLD) && this.isFiltered && !this.isClusterNode
 			|| this.clusterIsVisible;
 };
 
@@ -447,7 +447,7 @@ var NBodySimulator = function() {
 			}
 			if (link.isClusterLink) {
 				link.target.clusterIsVisible = link.target.clusterIsVisible || link.source.isVisible()
-						&& !YACA_SimulationOptions.FILTER_CLUSTER;
+						&& YACA_SimulationOptions.DISPLAY_CLUSTER;
 			}
 		}
 	};
@@ -477,7 +477,7 @@ var NBodySimulator = function() {
 			link = links[i];
 			if (link.isClusterLink) {
 				link.target.clusterIsVisible = link.target.clusterIsVisible
-						|| (link.source.isVisible() && !YACA_SimulationOptions.FILTER_CLUSTER);
+						|| (link.source.isVisible() && YACA_SimulationOptions.DISPLAY_CLUSTER);
 			}
 		}
 

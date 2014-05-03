@@ -502,9 +502,9 @@ function arraysIdentical(a, b) {
  */
 function yaca_agent_callback(input_model) {
 	"use strict";
-	
+
 	YACA_NBodySimulator.updateModel(input_model);
-	
+
 	if (typeof (input_model.process_id_active) !== "undefined") {
 		// 
 		if (!arraysIdentical(g_old_pids, input_model.process_id_available)) {
@@ -529,7 +529,6 @@ function yaca_agent_callback(input_model) {
 		}
 	}
 
-	
 }
 
 /**
@@ -585,10 +584,13 @@ function initDatGui(container) {
 	g_gui_folder1.open();
 
 	f2 = g_gui.addFolder('Filter Nodes by ... ');
-	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 0.0, 100.0).step(1.0).name('Activity Index');
+	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Activity Index');
 	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
 		YACA_NodeRegexFilter = new RegExp(value);
 	});
+	f2.add(YACA_SimulationOptions, 'RENDER_INACTIVE').name('Inactive Nodes');
+	f2.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Names');
+	f2.add(YACA_SimulationOptions, 'DISPLAY_CLUSTER').name('Cluster');
 	f2.open();
 
 	f3 = g_gui.addFolder('N-Body Simulation');
