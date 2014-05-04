@@ -158,10 +158,13 @@ public class Model {
      */
     private int lastLength = 1000;
 
+    /**
+     * Id of the current active process
+     */
     private String activeProcess = "----";
 
     /**
-     * Method updateLinks analyses the call stack of all threads and collects
+     * Method updateLinks analyzes the call stack of all threads and collects
      * the data in the class ResultData.
      */
     public synchronized void append(final List<Item> entryList, final boolean countNodes, final boolean countLinks) {
@@ -171,6 +174,22 @@ public class Model {
 		add(entryList.get(i), entryList.get(i + 1), countNodes, countLinks);
 	    }
 	}
+    }
+
+    public synchronized void setActiveProcess(String processId) {
+	this.activeProcess = processId;
+    }
+
+    public synchronized void reset() {
+	nodes.clear();
+	nodeIds.clear();
+	clusterIds.clear();
+	linkIds.clear();
+	links.clear();
+	nodesCount.clear();
+	maxValueNodeCount = 1L;
+	lastLength = 1000;
+	LOGGER.info("reset done");	 
     }
 
     public synchronized StringBuffer getJSONPModel() {
@@ -336,21 +355,6 @@ public class Model {
 
     private String getClusterKey(Item item) {
 	return item.getPackageName() + '.' + item.getClassName();
-    }
-
-    public synchronized void setActiveProcess(String processId) {
-	this.activeProcess = processId;
-    }
-
-    public synchronized void reset() {
-	nodes.clear();
-	nodeIds.clear();
-	clusterIds.clear();
-	linkIds.clear();
-	links.clear();
-	nodesCount.clear();
-	maxValueNodeCount = 1L;
-	lastLength = 1000;
     }
 
 }

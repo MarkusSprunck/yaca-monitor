@@ -52,35 +52,33 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  */
 public class CallStackAnalyser {
 
-    public static final String INVALID_PROCESS_ID = "----";
     /**
      * Constants
      */
     private static final Log LOGGER = LogFactory.getLog(CallStackAnalyser.class);
     private static final String NL = System.getProperty("line.separator");
-    private static String processIdOld = INVALID_PROCESS_ID;
-    private static String processIdNew = INVALID_PROCESS_ID;
+    public static final String INVALID_PROCESS_ID = "----";
+    private static String lastProcessID = INVALID_PROCESS_ID;
+    private static String currentProcessID = INVALID_PROCESS_ID;
     private static boolean isConnected = false;
 
     public CallStackAnalyser() {
     }
 
-    public synchronized void run() {
+    public synchronized void start() {
 
 	HotSpotVirtualMachine hsVm = null;
 	do {
 
 	    try {
-		if (!processIdNew.equals(processIdOld)
-			&& findOtherAttachableJavaVMs().toString().contains(processIdNew)) {
-		    LOGGER.info("request change from pid=" + processIdOld + " to pid=" + processIdNew);
-
-		    hsVm = (HotSpotVirtualMachine) VirtualMachine.attach(processIdNew);
-		    Agent.MODEL.setActiveProcess(processIdNew);
+		if (!currentProcessID.equals(lastProcessID)
+			&& findOtherAttachableJavaVMs().toString().contains(currentProcessID)) {
+		    LOGGER.info("request change from pid=" + lastProcessID + " to pid=" + currentProcessID);
+		    hsVm = (HotSpotVirtualMachine) VirtualMachine.attach(currentProcessID);
+		    Agent.MODEL.setActiveProcess(currentProcessID);
 		    Agent.MODEL.reset();
 		    isConnected = true;
-		    processIdOld = processIdNew;
-
+		    lastProcessID = currentProcessID;
 		} else if (isConnected) {
 		    try {
 			final List<Model.Item> entryList = new ArrayList<Model.Item>(10);
@@ -122,13 +120,8 @@ public class CallStackAnalyser {
 		    } catch (final IOException e) {
 			LOGGER.error("IOException " + e.getMessage());
 			isConnected = false;
-			processIdOld = INVALID_PROCESS_ID;
-		    }
-		} else {
-		    // Nothing to do till the next request with a new process id
-		    try {
-			Thread.sleep(10);
-		    } catch (InterruptedException e) {
+			lastProcessID = INVALID_PROCESS_ID;
+			currentProcessID = INVALID_PROCESS_ID;
 		    }
 		}
 
@@ -138,11 +131,11 @@ public class CallStackAnalyser {
 		}
 		Agent.MODEL.reset();
 		isConnected = false;
-		processIdOld = INVALID_PROCESS_ID;
+		lastProcessID = INVALID_PROCESS_ID;
 	    } catch (IOException e) {
 		LOGGER.error("IOException " + e.getMessage());
 		isConnected = false;
-		processIdOld = INVALID_PROCESS_ID;
+		lastProcessID = INVALID_PROCESS_ID;
 	    }
 	} while (true);
     }
@@ -190,6 +183,6 @@ public class CallStackAnalyser {
     }
 
     public synchronized static void setProcessNewID(String processIdNew) {
-	CallStackAnalyser.processIdNew = processIdNew;
+	CallStackAnalyser.currentProcessID = processIdNew;
     }
 }

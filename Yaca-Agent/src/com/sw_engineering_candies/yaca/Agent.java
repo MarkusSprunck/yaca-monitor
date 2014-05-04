@@ -55,15 +55,16 @@ public class Agent {
     private static final String OPTION_HELP = "help";
     private static final String HELP_TEXT_SHOW_HELP = "Show help information.";
     private static final String HELP_TEXT_PORT = "Mandatory parameter port for webserver.";
+    private static final int DEFAULT_PORT = 33333;
 
     public static final Model MODEL = new Model();
 
-    public static CallStackAnalyser analysisCallStack = new CallStackAnalyser();
+    public static CallStackAnalyser ANALYSER = new CallStackAnalyser();
 
     /**
      * Port for this HTTP server
      */
-    private static int port = 33333;
+    private static int port = DEFAULT_PORT;
 
     private static Options createCommandLineOptions() {
 	final Options options = new Options();
@@ -96,7 +97,7 @@ public class Agent {
 	    try {
 		port = Integer.parseInt(cl.getOptionValue(OPTION_PORT));
 		if ((port < 1) || (port > 65535)) {
-		    port = 8080;
+		    port = DEFAULT_PORT;
 		}
 	    } catch (final NumberFormatException e) {
 		LOGGER.error(e.getMessage());
@@ -136,7 +137,7 @@ public class Agent {
 	startHTTPServer();
 
 	// Start dynamic code analysis
-	analysisCallStack.run();
+	ANALYSER.start();
     }
 
 }
