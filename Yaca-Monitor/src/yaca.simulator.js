@@ -42,14 +42,14 @@ function SimulationOptions() {
 		THETA : 0.8,
 		DISTANCE : 160,
 		SPRING : 20,
-		RUN_IMPORT_FILTER : '^((?!(Thread.run)).)*$',
+		RUN_IMPORT_FILTER : 'yaca', // '^((?!(Thread.run)).)*$',
 		URL : "http:\\\\localhost:33333",
 		ACTIVE_PID : '----',
 
 		// Parameters for rendering
 		RUN_IMPORT : true,
 		RUN_IMPORT_INTERVAL : 3000,
-		DISPLAY_CLUSTER : false,
+		DISPLAY_CLUSTER : true,
 		RUN_SIMULATION : true,
 		DISPLAY_DIRECTIONS : true,
 		DISPLAY_NAMES : true,

@@ -59,10 +59,9 @@ var g_container;
 var g_colorHash = new HashMap();
 var g_gui;
 var g_gui_pid;
-var g_Message = '';
-var g_imported_data = false;
 var g_process_id_active = '0000';
 var g_old_pids = [];
+var g_lastUpdate = new Date();
 
 /**
  * Initializes the application
@@ -99,7 +98,7 @@ function initWebGL() {
 
 	// Size of drawing
 	g_panelHeightWebGL = window.outerHeight - BORDER_BOTTOM;
-	g_panelWidthWebGL = window.outerWidth - BORDER_RIGHT * 2; // 
+	g_panelWidthWebGL = window.outerWidth - BORDER_RIGHT * 2;
 	BORDER_RIGHT = window.innerWidth - g_panelWidthWebGL;
 
 	// Create g_camera
@@ -483,6 +482,7 @@ function importAgentData(url) {
 			}
 		}
 	}, 10000);
+	g_lastUpdate = new Date();
 }
 
 function arraysIdentical(a, b) {
@@ -564,8 +564,7 @@ function updateStatusLine() {
 			+ ' (' + YACA_NBodySimulator.link_list.length + ')');
 
 	var stausLine2 = document.getElementById('statusLine2');
-	var modelType = (g_imported_data) ? 'Data imported from YacaAgent (dynamic)' : 'Default model (static)';
-	stausLine2.innerHTML = (g_Message + modelType);
+	stausLine2.innerHTML = (YACA_SimulationOptions.RUN_IMPORT) ? g_lastUpdate.toUTCString() : 'Import not active';
 }
 
 /**
@@ -577,21 +576,28 @@ function initDatGui(container) {
 	});
 
 	g_gui_folder1 = g_gui.addFolder('General Options');
-	g_gui_folder1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Run Import').onChange(function(value) {
-		g_imported_data = true;
-	});
+	g_gui_folder1.add(YACA_SimulationOptions, 'RUN_IMPORT').name('Import');
 	g_gui_folder1.add(YACA_SimulationOptions, 'URL').name('Import URL');
 	g_gui_folder1.open();
 
-	f2 = g_gui.addFolder('Filter Nodes by ... ');
+	f2 = g_gui.addFolder('Filter Nodes by');
 	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Activity Index');
 	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
 		YACA_NodeRegexFilter = new RegExp(value);
 	});
-	f2.add(YACA_SimulationOptions, 'RENDER_INACTIVE').name('Inactive Nodes');
-	f2.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Names');
-	f2.add(YACA_SimulationOptions, 'DISPLAY_CLUSTER').name('Cluster');
 	f2.open();
+
+	f3 = g_gui.addFolder('Extended Options');
+	f3.add(YACA_SimulationOptions, 'RENDER_INACTIVE').name('Inactive Nodes');
+	f3.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Names');
+	f3.add(YACA_SimulationOptions, 'DISPLAY_CLUSTER').name('Cluster');
+	f3.add(YACA_SimulationOptions, 'RUN_IMPORT_INTERVAL', 500, 10000).step(500).name("Import Intervall").onChange(
+			function(value) {
+				clearInterval(g_updateTimerImport);
+				g_updateTimerImport = setInterval(function() {
+					updateTimerImport();
+				}, YACA_SimulationOptions.RUN_IMPORT_INTERVAL);
+			});
 
 	f3 = g_gui.addFolder('N-Body Simulation');
 	f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
