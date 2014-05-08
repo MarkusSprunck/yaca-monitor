@@ -42,18 +42,18 @@ function SimulationOptions() {
 		THETA : 0.8,
 		DISTANCE : 160,
 		SPRING : 20,
-		RUN_IMPORT_FILTER : 'yaca', // '^((?!(Thread.run)).)*$',
+		RUN_IMPORT_FILTER : '^((?!(Thread.run)).)*$',
 		URL : "http:\\\\localhost:33333",
 		ACTIVE_PID : '----',
 
 		// Parameters for rendering
 		RUN_IMPORT : true,
-		RUN_IMPORT_INTERVAL : 3000,
-		DISPLAY_CLUSTER : true,
+		RUN_IMPORT_INTERVAL : 2000,
+		DISPLAY_CLUSTER : false,
 		RUN_SIMULATION : true,
 		DISPLAY_DIRECTIONS : true,
 		DISPLAY_NAMES : true,
-		RENDER_THRESHOLD : 150.0,
+		RENDER_THRESHOLD : 200.0,
 		RENDER_INACTIVE : false
 	};
 }
@@ -107,8 +107,8 @@ NNode.prototype.getCalls = function() {
 
 NNode.prototype.isVisible = function() {
 	"use strict";
-	return (YACA_SimulationOptions.RENDER_INACTIVE || this.getActivity() >= YACA_SimulationOptions.RENDER_THRESHOLD) && this.isFiltered && !this.isClusterNode
-			|| this.clusterIsVisible;
+	return (YACA_SimulationOptions.RENDER_INACTIVE || this.getActivity() >= YACA_SimulationOptions.RENDER_THRESHOLD)
+			&& this.isFiltered && !this.isClusterNode || this.clusterIsVisible;
 };
 
 NNode.prototype.getRadius = function() {
@@ -120,8 +120,8 @@ NNode.prototype.getRadius = function() {
 NNode.prototype.getActivity = function() {
 	"use strict";
 	if (this.getCalls() > 0) {
-		return this.isClusterNode ? 0
-				: 1000.0 * (Math.log(this.getCalls()) / Math.log(YACA_NBodySimulator.maxNodeCalls));
+		return this.isClusterNode ? 0 : 1000.0 * (Math.log(this.getCalls()) / Math
+				.log(YACA_NBodySimulator.maxNodeCalls));
 	} else {
 		return 0.0;
 	}

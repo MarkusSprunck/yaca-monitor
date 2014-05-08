@@ -181,15 +181,14 @@ public class Model {
     }
 
     public synchronized void reset() {
+	resetCouters();
 	nodes.clear();
 	nodeIds.clear();
 	clusterIds.clear();
 	linkIds.clear();
 	links.clear();
 	nodesCount.clear();
-	maxValueNodeCount = 1L;
-	lastLength = 1000;
-	LOGGER.info("reset done");	 
+	LOGGER.info("reset");
     }
 
     public synchronized StringBuffer getJSONPModel() {
