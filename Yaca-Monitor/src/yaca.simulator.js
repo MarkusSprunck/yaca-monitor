@@ -53,7 +53,7 @@ function SimulationOptions() {
 		RUN_SIMULATION : true,
 		DISPLAY_DIRECTIONS : true,
 		DISPLAY_NAMES : true,
-		RENDER_THRESHOLD : 15.0,
+		RENDER_THRESHOLD : 150.0,
 		RENDER_INACTIVE : false
 	};
 }
@@ -121,7 +121,7 @@ NNode.prototype.getActivity = function() {
 	"use strict";
 	if (this.getCalls() > 0) {
 		return this.isClusterNode ? 0
-				: 100.0 * (Math.log(this.getCalls()) / Math.log(YACA_NBodySimulator.maxNodeCalls));
+				: 1000.0 * (Math.log(this.getCalls()) / Math.log(YACA_NBodySimulator.maxNodeCalls));
 	} else {
 		return 0.0;
 	}

@@ -581,7 +581,7 @@ function initDatGui(container) {
 	g_gui_folder1.open();
 
 	f2 = g_gui.addFolder('Filter Nodes by');
-	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 100.0).step(1.0).name('Activity Index');
+	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 1000.0).step(1.0).name('Activity Index');
 	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
 		YACA_NodeRegexFilter = new RegExp(value);
 	});
