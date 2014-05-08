@@ -580,18 +580,32 @@ function initDatGui(container) {
 	g_gui_folder1.add(YACA_SimulationOptions, 'URL').name('Import URL');
 	g_gui_folder1.open();
 
-	f2 = g_gui.addFolder('Filter Nodes by');
-	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 1000.0).step(1.0).name('Activity Index');
-	f2.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
-		YACA_NodeRegexFilter = new RegExp(value);
-	});
+	f2 = g_gui.addFolder('Filter Activity');
+	f2.add(YACA_SimulationOptions, 'RENDER_THRESHOLD', 1.0, 1000.0).step(1.0).name('Index');
 	f2.open();
 
-	f3 = g_gui.addFolder('Extended Options');
-	f3.add(YACA_SimulationOptions, 'RENDER_INACTIVE').name('Inactive Nodes');
-	f3.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Names');
-	f3.add(YACA_SimulationOptions, 'DISPLAY_CLUSTER').name('Cluster');
-	f3.add(YACA_SimulationOptions, 'RUN_IMPORT_INTERVAL', 500, 10000).step(500).name("Import Intervall").onChange(
+	f3 = g_gui.addFolder('Filter Regex');
+	f3.add(YACA_SimulationOptions, 'RUN_IMPORT_FILTER').name('Name').listen().onChange(function(value) {
+		if (YACA_SimulationOptions.INVERT_IMPORT_FILTER) {
+			YACA_NodeRegexFilter = new RegExp('^((?!(' + value + ')).)*$');
+		} else {
+			YACA_NodeRegexFilter = new RegExp(value);
+		}
+	});
+	f3.add(YACA_SimulationOptions, 'INVERT_IMPORT_FILTER').name('Invert').onChange(function(value) {
+		if (value) {
+			YACA_NodeRegexFilter = new RegExp('^((?!(' + YACA_SimulationOptions.RUN_IMPORT_FILTER + ')).)*$');
+		} else {
+			YACA_NodeRegexFilter = new RegExp(YACA_SimulationOptions.RUN_IMPORT_FILTER);
+		}
+	});
+	f3.open();
+
+	f4 = g_gui.addFolder('Extended Options');
+	f4.add(YACA_SimulationOptions, 'RENDER_INACTIVE').name('Inactive Nodes');
+	f4.add(YACA_SimulationOptions, 'DISPLAY_NAMES').name('Names');
+	f4.add(YACA_SimulationOptions, 'DISPLAY_CLUSTER').name('Cluster');
+	f4.add(YACA_SimulationOptions, 'RUN_IMPORT_INTERVAL', 500, 10000).step(500).name("Import Intervall").onChange(
 			function(value) {
 				clearInterval(g_updateTimerImport);
 				g_updateTimerImport = setInterval(function() {
@@ -599,18 +613,18 @@ function initDatGui(container) {
 				}, YACA_SimulationOptions.RUN_IMPORT_INTERVAL);
 			});
 
-	f3 = g_gui.addFolder('N-Body Simulation');
-	f3.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
-	f3.add(YACA_SimulationOptions, 'DISTANCE', YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
+	f5 = g_gui.addFolder('N-Body Simulation');
+	f5.add(YACA_SimulationOptions, 'RUN_SIMULATION').name('Run');
+	f5.add(YACA_SimulationOptions, 'DISTANCE', YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 2,
 			YACA_SimulationOptions.SPHERE_RADIUS_MINIMUM * 10).step(10.0).name('Link Distance');
-	f3.add(YACA_SimulationOptions, 'SPRING', 0.0, 40).step(5.0).name('Spring Link');
-	f3.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(
+	f5.add(YACA_SimulationOptions, 'SPRING', 0.0, 40).step(5.0).name('Spring Link');
+	f5.add(YACA_SimulationOptions, 'SPHERE_RADIUS', 400, 2000).step(100.0).name('Sphere Radius').onChange(
 			function(value) {
 				YACA_NBodySimulator.node_list.forEach(function(node) {
 					YACA_NBodySimulator.scaleToBeInSphere(node);
 				});
 			});
-	f3.add(YACA_SimulationOptions, 'CHARGE', 0, 3000).step(100.0).name('Charge');
+	f5.add(YACA_SimulationOptions, 'CHARGE', 0, 3000).step(100.0).name('Charge');
 
 	container.appendChild(g_gui.domElement);
 }
