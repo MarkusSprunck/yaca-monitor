@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.logging.Log;
@@ -63,26 +64,56 @@ public class WebServer extends Thread {
 	this.port = port;
     }
 
-    @Override
     public void run() {
+	boolean isRunning = true;
 	Socket connection = null;
-	while (true) {
-	    try {
-		final ServerSocket server = new ServerSocket(port);
+	ServerSocket server = null;
+	try {
+	    server = new ServerSocket(this.port);
+
+	    while (isRunning) {
+
 		connection = server.accept();
 		final OutputStream out = new BufferedOutputStream(connection.getOutputStream());
 		final InputStream in = new BufferedInputStream(connection.getInputStream());
-		final String request = readFirstLineOfRequest(in).toString();
-		LOGGER.debug("get request " + request.toString());
+		String request = "";
+		try {
+		    final StringBuffer request1;
+		    request1 = new StringBuffer(200);
+		    while (true) {
+			final int character = in.read();
+			if ((character == '\n') || (character == '\r') || (character == -1)) {
+			    break;
+			}
+			request1.append((char) character);
+		    }
+		    request = request1.toString();
+		} catch (IOException ex) {
+		    if (!server.isBound()) {
+			server = new ServerSocket(this.port);
+		    }
+		    continue;
+		}
 
-		if (request.startsWith("GET /process")) {
+		LOGGER.info(request.toString());
 
-		    String newPID = request.substring(15, 19);
+		if (request.startsWith("GET /terminate")) {
+		    LOGGER.info("called terminate");
+		    LOGGER.info("server stopped");
+		    System.exit(0);
+		} else if (request.startsWith("GET /process")) {
+
+		    String newPID = request.substring(15, 18).trim();
 		    try {
 			Integer.valueOf(newPID);
+			CallStackAnalyser.findOtherAttachableJavaVMs();
+			LOGGER.info("VirtualMachines=" + CallStackAnalyser.allVirtualMachines);
+
+			LOGGER.info("set new process id=" + newPID);
 			CallStackAnalyser.setProcessNewID(newPID);
+
 		    } catch (NumberFormatException ex) {
-			// this can be ignored
+			LOGGER.error("invalid id=" + newPID);
 		    }
 
 		    // Create content of response
@@ -99,17 +130,26 @@ public class WebServer extends Thread {
 			out.write(compressedString.toByteArray());
 			out.flush();
 		    }
-		} else if (request.startsWith("GET /terminate")) {
-		    throw new RuntimeException("terminate");
 		}
 		// Close the socket
 		connection.close();
 		in.close();
 		out.close();
-		server.close();
-	    } catch (final IOException e) {
-		LOGGER.error(e.getMessage());
+
 	    }
+	} catch (final IOException e) {
+	    LOGGER.error(e.getMessage());
+	    e.printStackTrace();
+	    LOGGER.info("server stopped");
+	}
+
+	try {
+	    server.close();
+	} catch (IOException e) {
+	    LOGGER.error(e.getMessage());
+	    e.printStackTrace();
+	    LOGGER.info("server stopped");
+	    System.exit(0);
 	}
     }
 
@@ -121,9 +161,9 @@ public class WebServer extends Thread {
 	return out;
     }
 
-    private StringBuffer readFirstLineOfRequest(final InputStream in) throws IOException {
+    private String readFirstLineOfRequest(final InputStream in) throws IOException {
 	final StringBuffer request;
-	request = new StringBuffer(100);
+	request = new StringBuffer(200);
 	while (true) {
 	    final int character = in.read();
 	    if ((character == '\n') || (character == '\r') || (character == -1)) {
@@ -131,7 +171,7 @@ public class WebServer extends Thread {
 	    }
 	    request.append((char) character);
 	}
-	return request;
+	return request.toString();
     }
 
 }

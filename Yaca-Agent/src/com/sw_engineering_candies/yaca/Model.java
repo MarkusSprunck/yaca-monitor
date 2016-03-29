@@ -188,7 +188,7 @@ public class Model {
 	linkIds.clear();
 	links.clear();
 	nodesCount.clear();
-	LOGGER.info("reset");
+	LOGGER.info("reset counters and clear model");
     }
 
     public synchronized StringBuffer getJSONPModel() {
@@ -200,7 +200,7 @@ public class Model {
 
 	fw.append("yaca_agent_callback({" + NL);
 
-	List<Integer> processIDs = CallStackAnalyser.findOtherAttachableJavaVMs();
+	List<Integer> processIDs = CallStackAnalyser.allVirtualMachines;
 	fw.append("\"process_id_available\":[");
 	fw.append(NL);
 	boolean isFrist = true;
@@ -242,20 +242,19 @@ public class Model {
 	fw.append(NL + "]})");
 	fw.append(NL);
 
-	logStatistic();
+	final StringBuffer message = new StringBuffer(200);
+	message.append("pid=").append(activeProcess);
+	message.append(" clusters=").append(clusterIds.size());
+	message.append(" nodes=").append(nodeIds.size());
+	message.append(" links=").append(links.size());
+	LOGGER.info(message);
+	
 	resetCouters();
 	lastLength = fw.length();
 	return fw;
     }
 
-    private void logStatistic() {
-	final StringBuffer message = new StringBuffer(200);
-	message.append("pid=").append(activeProcess);
-	message.append(", clusters=").append(clusterIds.size());
-	message.append(", nodes=").append(nodeIds.size());
-	message.append(", links=").append(links.size());
-	LOGGER.info(message);
-    }
+   
 
     private void add(final Item targetEntry, final Item sourceEntry, final boolean countNodes, final boolean countLinks) {
 

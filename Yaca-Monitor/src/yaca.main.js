@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2013-2014, Markus Sprunck
+ * Copyright (C) 2013-2016, Markus Sprunck
  *
  * All rights reserved.
  *

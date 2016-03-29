@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,9 +60,10 @@ public class CallStackAnalyser {
     private static final Log LOGGER = LogFactory.getLog(CallStackAnalyser.class);
     private static final String NL = System.getProperty("line.separator");
     public static final String INVALID_PROCESS_ID = "----";
-    private static String lastProcessID = INVALID_PROCESS_ID;
     private static String currentProcessID = INVALID_PROCESS_ID;
+    private static String newProcessID = "";
     private static boolean isConnected = false;
+    static CopyOnWriteArrayList<Integer> allVirtualMachines = new CopyOnWriteArrayList<Integer>();
 
     public CallStackAnalyser() {
     }
@@ -72,14 +74,22 @@ public class CallStackAnalyser {
 	do {
 
 	    try {
-		if (!currentProcessID.equals(lastProcessID)
-			&& findOtherAttachableJavaVMs().toString().contains(currentProcessID)) {
-		    LOGGER.info("request change from pid=" + lastProcessID + " to pid=" + currentProcessID);
-		    hsVm = (HotSpotVirtualMachine) VirtualMachine.attach(currentProcessID);
-		    Agent.MODEL.setActiveProcess(currentProcessID);
+		if (allVirtualMachines.size() == 0) {
+		    findOtherAttachableJavaVMs();
+		    LOGGER.info("VirtualMachines=" + allVirtualMachines);
+		    if (!allVirtualMachines.isEmpty()) {
+			newProcessID = allVirtualMachines.get(0).toString();
+			LOGGER.info("Select pid=" + currentProcessID);
+
+		    }
+		} else if (!currentProcessID.equals(newProcessID)) {
+		    LOGGER.info("request change from pid=" + currentProcessID + " to pid=" + newProcessID
+			    + " allVirtualMachines=" + allVirtualMachines);
+		    hsVm = (HotSpotVirtualMachine) VirtualMachine.attach(newProcessID);
+		    Agent.MODEL.setActiveProcess(newProcessID);
 		    Agent.MODEL.reset();
+		    currentProcessID = newProcessID;
 		    isConnected = true;
-		    lastProcessID = currentProcessID;
 		} else if (isConnected) {
 		    try {
 			final List<Model.Item> entryList = new ArrayList<Model.Item>(10);
@@ -87,7 +97,8 @@ public class CallStackAnalyser {
 			final BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String line = "";
 			while ((line = br.readLine()) != null) {
-			    if (line.startsWith("\tat ")) {
+			    if (line.startsWith("\tat ") && line.length() > 4) {
+				LOGGER.debug(line);
 				final String temp2 = line.substring(4, line.lastIndexOf('('));
 				final String[] split = temp2.split("\\.");
 				if (split.length > 2) {
@@ -121,7 +132,6 @@ public class CallStackAnalyser {
 		    } catch (final IOException e) {
 			LOGGER.error("IOException " + e.getMessage());
 			isConnected = false;
-			lastProcessID = INVALID_PROCESS_ID;
 			currentProcessID = INVALID_PROCESS_ID;
 		    }
 		}
@@ -131,18 +141,18 @@ public class CallStackAnalyser {
 		    LOGGER.error("AttachNotSupportedException " + e.getMessage());
 		}
 		Agent.MODEL.reset();
-		isConnected = false;
-		lastProcessID = INVALID_PROCESS_ID;
+		// isConnected = false;
 	    } catch (IOException e) {
 		LOGGER.error("IOException " + e.getMessage());
-		isConnected = false;
-		lastProcessID = INVALID_PROCESS_ID;
+		Agent.MODEL.reset();
+		// isConnected = false;
 	    }
 	} while (true);
     }
 
-    public static List<Integer> findOtherAttachableJavaVMs() {
-	List<Integer> result = new ArrayList<Integer>();
+    public synchronized static List<Integer> findOtherAttachableJavaVMs() {
+
+	allVirtualMachines.clear();
 
 	List<VirtualMachineDescriptor> vmDesc = VirtualMachine.list();
 	for (int i = 0; i < vmDesc.size(); i++) {
@@ -177,7 +187,7 @@ public class CallStackAnalyser {
 		    LOGGER.debug(message);
 		    vm.detach();
 
-		    result.add(Integer.parseInt(nextPID));
+		    allVirtualMachines.add(Integer.parseInt(nextPID));
 		} catch (AttachNotSupportedException e) {
 		    LOGGER.error(e.getMessage());
 		} catch (IOException e) {
@@ -185,10 +195,11 @@ public class CallStackAnalyser {
 		}
 	    }
 	}
-	return result;
+
+	return allVirtualMachines;
     }
 
     public synchronized static void setProcessNewID(String processIdNew) {
-	CallStackAnalyser.currentProcessID = processIdNew;
+	CallStackAnalyser.newProcessID = processIdNew.trim();
     }
 }

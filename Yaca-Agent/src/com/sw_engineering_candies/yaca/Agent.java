@@ -79,7 +79,7 @@ public class Agent {
 		+ "analysis and provides result the yaca client.", options);
     }
 
-    private static void startHTTPServer() {
+    private static void startHTTPServerThread() {
 	String hostname = "localhost";
 	try {
 	    InetAddress addr = InetAddress.getLocalHost();
@@ -108,7 +108,7 @@ public class Agent {
 
     public static void main(final String[] args) {
 
-	LOGGER.info("(c) 2012-2014 by Markus Sprunck, v2.1 - 02.05.2014");
+	LOGGER.info("(c) 2012-2016 by Markus Sprunck, v2.2");
 
 	// Parse command line and store parameter in attributes
 	final Parser commandlineparser = new PosixParser();
@@ -134,10 +134,10 @@ public class Agent {
 	}
 
 	// Starts new thread for Http Server
-	startHTTPServer();
-
+	startHTTPServerThread();
+	
 	// Start dynamic code analysis
-	ANALYSER.start();
+        ANALYSER.start();
     }
 
 }

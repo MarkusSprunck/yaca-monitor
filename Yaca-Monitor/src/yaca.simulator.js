@@ -42,7 +42,7 @@ function SimulationOptions() {
 		THETA : 0.8,
 		DISTANCE : 160,
 		SPRING : 20,
-		RUN_IMPORT_FILTER : 'yaca', //  '^((?!(Thread.run)).)*$',
+		RUN_IMPORT_FILTER :  '^((?!(Thread.run)).)*$',
 		INVERT_IMPORT_FILTER : false,
 		URL : "http:\\\\localhost:33333",
 		ACTIVE_PID : '----',
@@ -54,7 +54,7 @@ function SimulationOptions() {
 		RUN_SIMULATION : true,
 		DISPLAY_DIRECTIONS : true,
 		DISPLAY_NAMES : true,
-		RENDER_THRESHOLD : 200.0,
+		RENDER_THRESHOLD : 500.0,
 		RENDER_INACTIVE : false
 	};
 }
