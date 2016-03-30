@@ -57,9 +57,9 @@ public class Agent {
     private static final String HELP_TEXT_PORT = "Mandatory parameter port for webserver.";
     private static final int DEFAULT_PORT = 33333;
 
-    public static final Model MODEL = new Model();
+    public final Model model = new Model();
 
-    public static CallStackAnalyser ANALYSER = new CallStackAnalyser();
+    public Analyser analyser = new Analyser(model);
 
     /**
      * Port for this HTTP server
@@ -79,7 +79,7 @@ public class Agent {
 		+ "analysis and provides result the yaca client.", options);
     }
 
-    private static void startHTTPServerThread() {
+    private void startHTTPServerThread() {
 	String hostname = "localhost";
 	try {
 	    InetAddress addr = InetAddress.getLocalHost();
@@ -88,8 +88,12 @@ public class Agent {
 	    LOGGER.error(e.getMessage());
 	}
 	LOGGER.info("start for url: http:\\\\" + hostname + ':' + port);
-	final Thread serverThread = new WebServer(port);
+	final Thread serverThread = new WebServer(port, model);
 	serverThread.start();
+    }
+
+    private void startAnalyser() {
+	analyser.start();
     }
 
     private static void processCommandline(final CommandLine cl) throws IllegalArgumentException {
@@ -133,11 +137,9 @@ public class Agent {
 	    return;
 	}
 
-	// Starts new thread for Http Server
-	startHTTPServerThread();
-	
-	// Start dynamic code analysis
-        ANALYSER.start();
+	Agent agent = new Agent();
+	agent.startHTTPServerThread();
+	agent.startAnalyser();
     }
 
 }

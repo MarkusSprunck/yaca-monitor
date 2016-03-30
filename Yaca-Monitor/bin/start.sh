@@ -14,5 +14,8 @@ else
   exit 1
 fi
 
+/usr/bin/open -a "/Applications/Google Chrome.app" '/Users/markus/git/yaca-monitor/Yaca-Monitor/index.html' 
+
 echo "Start Yaca Agent."
 $JAVA_RUN_TIME  -jar "$JAR2"
+

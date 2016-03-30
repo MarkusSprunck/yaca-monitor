@@ -53,6 +53,7 @@ public class WebServer extends Thread {
      * Constants
      */
     private static final Log LOGGER = LogFactory.getLog(WebServer.class);
+
     private static final String NL = System.getProperty("line.separator");
 
     /**
@@ -60,8 +61,11 @@ public class WebServer extends Thread {
      */
     private final int port;
 
-    public WebServer(final int port) {
+    private Model model = null;
+
+    public WebServer(final int port, Model model) {
 	this.port = port;
+	this.model = model;
     }
 
     public void run() {
@@ -95,29 +99,37 @@ public class WebServer extends Thread {
 		    continue;
 		}
 
-		LOGGER.info(request.toString());
+		LOGGER.debug(request.toString());
 
 		if (request.startsWith("GET /terminate")) {
 		    LOGGER.info("called terminate");
 		    LOGGER.info("server stopped");
 		    System.exit(0);
+		} else if (request.startsWith("GET /filterWhite")) {
+		    LOGGER.info("request=" + request);
+		} else if (request.startsWith("GET /filterBlack")) {
+		    LOGGER.info("request=" + request);
 		} else if (request.startsWith("GET /process")) {
 
-		    String newPID = request.substring(15, 18).trim();
+		    String prefix = "/process/";
+		    int prefixIndex = request.lastIndexOf(prefix);
+		    String postfix = "?";
+		    int postfixIndex = request.lastIndexOf(postfix);
+		    String newPID = request.substring(prefixIndex + prefix.length(), postfixIndex).trim();
 		    try {
+			Analyser.findOtherAttachableJavaVMs();
+			LOGGER.debug("VirtualMachines=" + Analyser.allVirtualMachines);
+
 			Integer.valueOf(newPID);
-			CallStackAnalyser.findOtherAttachableJavaVMs();
-			LOGGER.info("VirtualMachines=" + CallStackAnalyser.allVirtualMachines);
+			LOGGER.debug("set new process id=" + newPID);
+			Analyser.setProcessNewID(newPID);
 
-			LOGGER.info("set new process id=" + newPID);
-			CallStackAnalyser.setProcessNewID(newPID);
-
-		    } catch (NumberFormatException ex) {
+		    } catch (Exception ex) {
 			LOGGER.error("invalid id=" + newPID);
 		    }
 
 		    // Create content of response
-		    final StringBuffer jsonpModel = Agent.MODEL.getJSONPModel();
+		    final StringBuffer jsonpModel = model.getJSONPModel();
 		    ByteArrayOutputStream compressedString = compress(jsonpModel.toString());
 
 		    // For HTTP/1.0 or later send a MIME header

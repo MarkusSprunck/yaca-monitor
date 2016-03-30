@@ -54,66 +54,7 @@ public class Model {
     private static final int EXPECTED_NUMBER_OF_CLUSTERS = 500;
     private static final int EXPECTED_NUMBER_OF_NODES = 1000;
 
-    public class Item {
-
-	private String packageName;
-
-	private String className;
-
-	private String methodName;
-
-	private boolean newItem;
-
-	public boolean isNewItem() {
-	    return newItem;
-	}
-
-	public void setNewItem(boolean newItem) {
-	    this.newItem = newItem;
-	}
-
-	public String getPackageName() {
-	    return packageName;
-	}
-
-	public String getClassName() {
-	    return className;
-	}
-
-	public String getMethodName() {
-	    return methodName;
-	}
-
-	@Override
-	public String toString() {
-	    return "Entry [" + packageName + ", " + className + ", " + methodName + "]";
-	}
-
-	public void setMethodName(final String methodName) {
-	    // Assertions - start
-	    assert methodName != null : "Null is not allowed";
-	    assert !methodName.isEmpty() : "Empty is not allowed";
-	    // Assertions - end
-	    this.methodName = methodName;
-	}
-
-	public void setClassName(final String className) {
-	    // Assertions - start
-	    assert className != null : "Null is not allowed";
-	    assert !className.isEmpty() : "Empty is not allowed";
-	    // Assertions - end
-	    this.className = className;
-	}
-
-	public void setPackageName(final String packageName) {
-	    // Assertions - start
-	    assert packageName != null : "Null is not allowed";
-	    assert !packageName.isEmpty() : "Empty is not allowed";
-	    // Assertions - end
-	    this.packageName = packageName;
-	}
-    }
-
+   
     /**
      * The map stores all created nodes
      */
@@ -164,10 +105,20 @@ public class Model {
     private String activeProcess = "----";
 
     /**
+     * This filter is used in analyzer-task
+     */
+    private String filterWhiteList = "";
+
+    /**
+     * This filter is used in analyzer-task
+     */
+    private String filterBlackList = "";
+
+    /**
      * Method updateLinks analyzes the call stack of all threads and collects
      * the data in the class ResultData.
      */
-    public synchronized void append(final List<Item> entryList, final boolean countNodes, final boolean countLinks) {
+    public synchronized void append(final List<Node> entryList, final boolean countNodes, final boolean countLinks) {
 	final int maxIndex = entryList.size() - 1;
 	if (maxIndex > 0) {
 	    for (int i = 0; i < maxIndex; i++) {
@@ -200,7 +151,7 @@ public class Model {
 
 	fw.append("yaca_agent_callback({" + NL);
 
-	List<Integer> processIDs = CallStackAnalyser.allVirtualMachines;
+	List<Integer> processIDs = Analyser.allVirtualMachines;
 	fw.append("\"process_id_available\":[");
 	fw.append(NL);
 	boolean isFrist = true;
@@ -248,15 +199,13 @@ public class Model {
 	message.append(" nodes=").append(nodeIds.size());
 	message.append(" links=").append(links.size());
 	LOGGER.info(message);
-	
+
 	resetCouters();
 	lastLength = fw.length();
 	return fw;
     }
 
-   
-
-    private void add(final Item targetEntry, final Item sourceEntry, final boolean countNodes, final boolean countLinks) {
+    private void add(final Node targetEntry, final Node sourceEntry, final boolean countNodes, final boolean countLinks) {
 
 	// add target cluster
 	final String targetClusterKey = getClusterKey(targetEntry);
@@ -347,12 +296,28 @@ public class Model {
 	maxValueNodeCount = 0L;
     }
 
-    private String getNodeKey(Item item) {
+    private String getNodeKey(Node item) {
 	return item.getPackageName() + '.' + item.getClassName() + '.' + item.getMethodName();
     }
 
-    private String getClusterKey(Item item) {
+    private String getClusterKey(Node item) {
 	return item.getPackageName() + '.' + item.getClassName();
+    }
+
+    public synchronized String getFilterBlackList() {
+	return filterBlackList;
+    }
+
+    public synchronized void setFilterBlackList(String filterBlackList) {
+	this.filterBlackList = filterBlackList;
+    }
+
+    public synchronized String getFilterWhiteList() {
+	return filterWhiteList;
+    }
+
+    public synchronized void setFilterWhiteList(String filterWhiteList) {
+	this.filterWhiteList = filterWhiteList;
     }
 
 }
