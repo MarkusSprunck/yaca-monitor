@@ -48,6 +48,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.Timer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -58,6 +60,8 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  * @version $Revision: 1.0 $
  */
 public class YacaAgentTestClient {
+
+	private static final Log LOGGER = LogFactory.getLog(YacaAgentTestClient.class);
 
 	private static final String BEAN_NAME_MERGE_SORT = "mergeSort";
 
@@ -87,6 +91,8 @@ public class YacaAgentTestClient {
 	}
 
 	public static void main(final String[] args) throws IOException {
+		LOGGER.info("(c) 2012-2016 by Markus Sprunck, v1.1");
+
 		final YacaAgentTestClient yacaAgentTest = new YacaAgentTestClient();
 		yacaAgentTest.run();
 	}
@@ -199,7 +205,8 @@ public class YacaAgentTestClient {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			if (springContext == null) {
-				springContext = new FileSystemXmlApplicationContext("classpath*:com/sw_engineering_candies/yaca/*config.xml");
+				springContext = new FileSystemXmlApplicationContext(
+						"classpath*:com/sw_engineering_candies/yaca/*config.xml");
 				sortBean = (ISort) springContext.getBean(BEAN_NAME_HEAP_SORT);
 			}
 
