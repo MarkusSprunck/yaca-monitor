@@ -87,7 +87,7 @@ public class Agent {
 	} catch (UnknownHostException e) {
 	    LOGGER.error(e.getMessage());
 	}
-	LOGGER.info("start for url: http:\\\\" + hostname + ':' + port);
+	LOGGER.info("start server at http://" + hostname + ':' + port + "/monitor ");
 	final Thread serverThread = new WebServer(port, model);
 	serverThread.start();
     }

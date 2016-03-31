@@ -96,9 +96,9 @@ public class Analyser {
 
 		    // Update filter white list
 		    final String filterWhite = model.getFilterWhiteList();
-		    final Pattern patternWhiteList = Pattern.compile(filterWhite);
+		    Pattern.compile(filterWhite);
 		    final String filterBlack = model.getFilterBlackList();
-		    final Pattern patternBlackList = Pattern.compile(filterBlack);
+		    Pattern.compile(filterBlack);
 
 		    try {
 			final List<Node> entryList = new ArrayList<Node>(10);
@@ -141,7 +141,6 @@ public class Analyser {
 		    } catch (final IOException e) {
 			LOGGER.error("IOException " + e.getMessage());
 			isConnected = false;
-			currentProcessID = INVALID_PROCESS_ID;
 		    }
 		}
 
@@ -196,7 +195,8 @@ public class Analyser {
 		    LOGGER.debug(message);
 		    vm.detach();
 
-		    allVirtualMachines.add(Integer.parseInt(nextPID));
+		    int processId = Integer.parseInt(nextPID);
+		    allVirtualMachines.add(processId);
 		} catch (AttachNotSupportedException e) {
 		    LOGGER.error(e.getMessage());
 		} catch (IOException e) {
@@ -209,6 +209,13 @@ public class Analyser {
     }
 
     public synchronized static void setProcessNewID(String processIdNew) {
-	Analyser.newProcessID = processIdNew.trim();
+	String value = processIdNew.trim();
+	try {
+	    Integer.valueOf(value);
+	    LOGGER.info("set new process id=" + value);
+	    Analyser.newProcessID = value;
+	} catch (Exception ex) {
+	    LOGGER.error("invalid id=" + value);
+	}
     }
 }

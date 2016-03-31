@@ -54,7 +54,6 @@ public class Model {
     private static final int EXPECTED_NUMBER_OF_CLUSTERS = 500;
     private static final int EXPECTED_NUMBER_OF_NODES = 1000;
 
-   
     /**
      * The map stores all created nodes
      */
@@ -149,26 +148,11 @@ public class Model {
 	final List<String> nodeskeys = new Vector<String>();
 	nodeskeys.addAll(nodes.keySet());
 
-	fw.append("yaca_agent_callback({" + NL);
-
-	List<Integer> processIDs = Analyser.allVirtualMachines;
-	fw.append("\"process_id_available\":[");
-	fw.append(NL);
-	boolean isFrist = true;
-	for (int index = 0; index < processIDs.size(); index++) {
-	    final String pid = processIDs.get(index).toString();
-	    fw.append((isFrist ? "    " : ",") + "");
-	    isFrist = false;
-	    fw.append(pid);
-	}
-	fw.append(NL + "],");
-	fw.append(NL);
-
-	fw.append("\"process_id_active\":\"" + this.activeProcess + "\"," + NL);
+	fw.append("{" + NL);
 
 	fw.append("\"nodes\":[");
-	fw.append(NL);
-	isFrist = true;
+	 fw.append(NL);
+	boolean isFrist = true;
 	for (int index = 0; index < nodeIds.size(); index++) {
 	    final String key = nodeIds.get(index);
 	    if (nodes.containsKey(key)) {
@@ -190,7 +174,7 @@ public class Model {
 		fw.append(links.get(key));
 	    }
 	}
-	fw.append(NL + "]})");
+	fw.append(NL + "]}");
 	fw.append(NL);
 
 	final StringBuffer message = new StringBuffer(200);
@@ -202,6 +186,34 @@ public class Model {
 
 	resetCouters();
 	lastLength = fw.length();
+	return fw;
+    }
+
+    public synchronized StringBuffer getJSONPVM() {
+
+	final StringBuffer fw = new StringBuffer(1000);
+	fw.append("{" + NL);
+	List<Integer> processIDs = Analyser.allVirtualMachines;
+	fw.append("\"process_id_available\":[");
+	fw.append(NL);
+	boolean isFrist = true;
+	for (int index = 0; index < processIDs.size(); index++) {
+	    final String pid = processIDs.get(index).toString();
+	    fw.append((isFrist ? "    " : ",") + "");
+	    isFrist = false;
+	    fw.append(pid);
+	}
+	fw.append(NL + "],");
+	fw.append(NL);
+	fw.append("\"process_id_active\":\"" + this.activeProcess + "\"" + NL);
+	fw.append(NL + "}");
+	fw.append(NL);
+
+	final StringBuffer message = new StringBuffer(200);
+	message.append("pid=").append(activeProcess);
+	message.append(" processIDs=").append(processIDs.toString());
+	LOGGER.info(message);
+
 	return fw;
     }
 
@@ -309,6 +321,7 @@ public class Model {
     }
 
     public synchronized void setFilterBlackList(String filterBlackList) {
+	LOGGER.info("filterBlackList=" + filterBlackList);
 	this.filterBlackList = filterBlackList;
     }
 
@@ -317,6 +330,7 @@ public class Model {
     }
 
     public synchronized void setFilterWhiteList(String filterWhiteList) {
+	LOGGER.info("filterWhiteList=" + filterWhiteList);
 	this.filterWhiteList = filterWhiteList;
     }
 

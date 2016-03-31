@@ -32,14 +32,17 @@ package com.sw_engineering_candies.yaca;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.zip.GZIPOutputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +59,19 @@ public class WebServer extends Thread {
 
     private static final String NL = System.getProperty("line.separator");
 
+    List<String> STATIC_JS_FILES = Arrays.asList("dat.gui.min.js", //
+	    "detector.js", //
+	    "three.min.js", //
+	    "trackballcontrols.js", //
+	    "projector.js", //
+	    "helvetiker_regular.typeface.js", //
+	    "stats.min.js", //
+	    "traceur.js", //
+	    "bootstrap.js", //
+	    "detector.js");
+
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
     /**
      * Port for this HTTP server
      */
@@ -66,124 +82,146 @@ public class WebServer extends Thread {
     public WebServer(final int port, Model model) {
 	this.port = port;
 	this.model = model;
+
+	if (classLoader == null) {
+	    classLoader = Class.class.getClassLoader();
+	}
     }
 
+    @Override
     public void run() {
 	boolean isRunning = true;
-	Socket connection = null;
 	ServerSocket server = null;
 	try {
 	    server = new ServerSocket(this.port);
+	} catch (IOException ex) {
+	    LOGGER.error(ex);
+	}
 
-	    while (isRunning) {
+	while (isRunning && server != null) {
 
-		connection = server.accept();
-		final OutputStream out = new BufferedOutputStream(connection.getOutputStream());
-		final InputStream in = new BufferedInputStream(connection.getInputStream());
-		String request = "";
-		try {
-		    final StringBuffer request1;
-		    request1 = new StringBuffer(200);
-		    while (true) {
-			final int character = in.read();
-			if ((character == '\n') || (character == '\r') || (character == -1)) {
-			    break;
-			}
-			request1.append((char) character);
-		    }
-		    request = request1.toString();
-		} catch (IOException ex) {
-		    if (!server.isBound()) {
-			server = new ServerSocket(this.port);
-		    }
-		    continue;
-		}
+	    try {
+		// get connection
+		final Socket socket = server.accept();
+		socket.setSoTimeout(1000);
+		final OutputStream out = socket.getOutputStream();
+		final InputStream in = socket.getInputStream();
 
-		LOGGER.debug(request.toString());
-
-		if (request.startsWith("GET /terminate")) {
-		    LOGGER.info("called terminate");
-		    LOGGER.info("server stopped");
-		    System.exit(0);
-		} else if (request.startsWith("GET /filterWhite")) {
-		    LOGGER.info("request=" + request);
-		} else if (request.startsWith("GET /filterBlack")) {
-		    LOGGER.info("request=" + request);
+		// handle request
+		RequestData request = new RequestData(in);
+		if (request.startsWith("GET /favicon.ico")) {
+		    sendResponsForStaticFile(out, request.getFirstLine(), "favicon.ico", "image/x-icon");
+		} else if (request.startsWith("GET /monitor/styles/main.css")) {
+		    sendResponsForStaticFile(out, request.getFirstLine(), "styles/main.css", "text/css");
+		} else if (request.startsWith("GET /monitor/external")) {
+		    sendResponsForAllStaticJavaScriptFiles(out, request.getFirstLine());
+		} else if (request.startsWith("DELETE /tasks")) {
+		    model.reset();
+		} else if (request.startsWith("DELETE /filterWhite")) {
+		    model.setFilterWhiteList("");
+		} else if (request.startsWith("DELETE /filterBlack")) {
+		    model.setFilterBlackList("");
+		} else if (request.startsWith("PUT /filterWhite")) {
+		    model.setFilterWhiteList(request.getBody());
+		} else if (request.startsWith("PUT /filterBlack")) {
+		    model.setFilterBlackList(request.getBody());
+		} else if (request.startsWith("GET /process/ids")) {
+		    sendResponseForVMRequest(out);
+		} else if (request.startsWith("PUT /process/id")) {
+		    Analyser.setProcessNewID(request.getBody());
 		} else if (request.startsWith("GET /process")) {
-
-		    String prefix = "/process/";
-		    int prefixIndex = request.lastIndexOf(prefix);
-		    String postfix = "?";
-		    int postfixIndex = request.lastIndexOf(postfix);
-		    String newPID = request.substring(prefixIndex + prefix.length(), postfixIndex).trim();
-		    try {
-			Analyser.findOtherAttachableJavaVMs();
-			LOGGER.debug("VirtualMachines=" + Analyser.allVirtualMachines);
-
-			Integer.valueOf(newPID);
-			LOGGER.debug("set new process id=" + newPID);
-			Analyser.setProcessNewID(newPID);
-
-		    } catch (Exception ex) {
-			LOGGER.error("invalid id=" + newPID);
-		    }
-
-		    // Create content of response
-		    final StringBuffer jsonpModel = model.getJSONPModel();
-		    ByteArrayOutputStream compressedString = compress(jsonpModel.toString());
-
-		    // For HTTP/1.0 or later send a MIME header
-		    if (request.indexOf("HTTP/1.1") != -1) {
-			final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL
-				+ "Content-Type: application/json" + NL + "Content-Encoding: gzip" + NL
-				+ "Content-Length: " + compressedString.size() + NL + NL;
-			final byte[] header = headerString.getBytes("UTF-8");
-			out.write(header);
-			out.write(compressedString.toByteArray());
-			out.flush();
-		    }
+		    sendResponseForModelRequest(out);
+		} else if (request.startsWith("GET /monitor")) {
+		    sendResponsForStaticFile(out, request.getFirstLine(), "index.html", "text/html");
+		} else {
+		    LOGGER.warn(request.toString());
 		}
-		// Close the socket
-		connection.close();
+
 		in.close();
 		out.close();
+		socket.close();
 
+	    } catch (final Exception e) {
+		e.printStackTrace();
 	    }
-	} catch (final IOException e) {
-	    LOGGER.error(e.getMessage());
-	    e.printStackTrace();
-	    LOGGER.info("server stopped");
 	}
 
 	try {
 	    server.close();
 	} catch (IOException e) {
 	    LOGGER.error(e.getMessage());
-	    e.printStackTrace();
 	    LOGGER.info("server stopped");
 	    System.exit(0);
 	}
     }
 
-    public static ByteArrayOutputStream compress(String str) throws IOException {
-	ByteArrayOutputStream out = new ByteArrayOutputStream();
-	GZIPOutputStream gzip = new GZIPOutputStream(out);
-	gzip.write(str.getBytes("UTF-8"));
-	gzip.close();
-	return out;
+    private void sendResponsForAllStaticJavaScriptFiles(final OutputStream out, String request) throws Exception {
+	for (String name : STATIC_JS_FILES) {
+	    if (request.contains(name)) {
+		sendResponsForStaticFile(out, request, "external/" + name, "application/javascript");
+	    }
+	}
     }
 
-    private String readFirstLineOfRequest(final InputStream in) throws IOException {
-	final StringBuffer request;
-	request = new StringBuffer(200);
-	while (true) {
-	    final int character = in.read();
-	    if ((character == '\n') || (character == '\r') || (character == -1)) {
-		break;
-	    }
-	    request.append((char) character);
+    private void sendResponseForModelRequest(final OutputStream out) throws UnsupportedEncodingException, IOException {
+
+	// Create content of response
+	final String jsonpModel = model.getJSONPModel().toString();
+
+	// For HTTP/1.0 or later send a MIME header
+	final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL
+		+ "Content-Type: application/json" + NL + "Content-Length: "
+		+ jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
+
+	out.write(headerString.getBytes("UTF-8"));
+	out.write(jsonpModel.toString().getBytes("UTF-8"));
+	out.flush();
+    }
+
+    private void sendResponseForVMRequest(final OutputStream out) throws UnsupportedEncodingException, IOException, InterruptedException {
+
+	Analyser.findOtherAttachableJavaVMs();
+	LOGGER.info("VirtualMachines=" + Analyser.allVirtualMachines);
+	
+	Thread.sleep(100);
+
+	// Create content of response
+	final String jsonpModel = model.getJSONPVM().toString();
+
+	// For HTTP/1.0 or later send a MIME header
+	final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL
+		+ "Content-Type: application/json" + NL + "Content-Length: "
+		+ jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
+
+	out.write(headerString.getBytes("UTF-8"));
+	out.write(jsonpModel.toString().getBytes("UTF-8"));
+	out.flush();
+    }
+
+    private void sendResponsForStaticFile(final OutputStream out, String request, String fileNamePath, String mimeType)
+	    throws Exception {
+	// Create content of requested file
+	InputStream fileContent = getClass().getResourceAsStream("/" + fileNamePath);
+	BufferedReader reader = new BufferedReader(new InputStreamReader(fileContent));
+	StringBuilder sb = new StringBuilder();
+	String line = null;
+	while ((line = reader.readLine()) != null) {
+	    sb.append(line + "\r\n");
 	}
-	return request.toString();
+	fileContent.close();
+	byte[] bytesBody = sb.toString().getBytes("UTF-8");
+
+	// For HTTP/1.0 or later send a MIME header
+	final String headerString = "HTTP/1.1 200 OK" + NL //
+		+ "Server: YacaAgent 2.0" + NL //
+		+ "Content-Type: " + mimeType + NL//
+		+ "Content-Length: " + bytesBody.length + NL + NL;
+	byte[] bytesHeader = headerString.getBytes("UTF-8");
+
+	out.write(bytesHeader);
+	out.write(bytesBody);
+	out.flush();
+	LOGGER.debug("sent resonse for request=" + request);
     }
 
 }

@@ -3,7 +3,7 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="build-jar">
-        <jar destfile="../Yaca-Monitor/bin/YacaAgentTestClient.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="../Yaca-Agent/dist/YacaAgentTestClient.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="com.sw_engineering_candies.yaca.YacaAgentTestClient"/>
                 <attribute name="Class-Path" value="."/>
