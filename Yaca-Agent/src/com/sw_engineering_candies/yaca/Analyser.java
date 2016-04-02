@@ -96,9 +96,9 @@ public class Analyser {
 
 		    // Update filter white list
 		    final String filterWhite = model.getFilterWhiteList();
-		    Pattern.compile(filterWhite);
+		    final Pattern patternWhiteList = Pattern.compile(filterWhite);
 		    final String filterBlack = model.getFilterBlackList();
-		    Pattern.compile(filterBlack);
+		    final Pattern patternBlackList = Pattern.compile(filterBlack);
 
 		    try {
 			final List<Node> entryList = new ArrayList<Node>(10);
@@ -111,22 +111,29 @@ public class Analyser {
 				final String temp2 = line.substring(4, line.lastIndexOf('('));
 				final String[] split = temp2.split("\\.");
 				if (split.length > 2) {
-				    final Node entry = new Node();
-
 				    final int indexOfMethodName = split.length - 1;
-				    entry.setMethodName(split[indexOfMethodName]);
-
 				    final int indexOfClassName = indexOfMethodName - 1;
-				    entry.setClassName(split[indexOfClassName]);
-
 				    final StringBuffer packageName = new StringBuffer(line.length());
 				    packageName.append(split[0]);
 				    for (int i = 1; i < indexOfClassName; i++) {
 					packageName.append('.').append(split[i]);
 				    }
-				    entry.setPackageName(packageName.toString());
-				    entry.setNewItem(true);
-				    entryList.add(entry);
+
+				    String packageString = packageName.toString();
+				    final boolean isWhiteListOk = patternWhiteList.matcher(temp2).find();
+				    if (isWhiteListOk) {
+					final boolean isBlackListOk = filterBlack.isEmpty()
+						|| !patternBlackList.matcher(temp2).find();
+					if (isBlackListOk) {
+					    String className = split[indexOfClassName];
+					    final Node entry = new Node();
+					    entry.setMethodName(split[indexOfMethodName]);
+					    entry.setClassName(className);
+					    entry.setPackageName(packageString);
+					    entry.setNewItem(true);
+					    entryList.add(entry);
+					}
+				    }
 
 				} else {
 				    LOGGER.warn("can't process line '" + line + "'");
