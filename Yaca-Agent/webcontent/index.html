@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-<title>Yaca-Monitor 5.0</title>
+<title>Yaca-Monitor 4.0</title>
 
 <!-- links -->
 <link type="image/x-icon" rel="icon" href="favicon.ico" />
@@ -26,33 +26,6 @@
 
 </head>
 <body class="main">
-
-	<script>
-        /**
-         * 
-         */
-        var g_lastUpdate = new Date();
-        var g_YACA_Monitor = null;
-        var g_YACA_NBodySimulator = null;
-        var g_YACA_Options = "----";
-        var g_old_pids = [];
-        var g_gui_pid;
-        var g_gui_folder1 = null;
-      
-        /**
-         * Simple helper to test equal content of two arrays 
-         */
-        function arraysIdentical(a, b) {
-            var i = a.length;
-            if (i != b.length)
-                return false;
-            while (i--) {
-                if (a[i] !== b[i])
-                    return false;
-            }
-            return true;
-        };
-    </script>
 
 	<!-- This code uses Traceur a compiler that takes ECMAScript Edition 6 
              and compiles it down to regular Javascript that runs in your browser. 
@@ -768,6 +741,8 @@
                         this.modelText;
                         this.url = this.getAnalyserServiceURL();
                         this.activeNode = null;
+						this.gui_pid;
+        				this.gui_folder1 = null;
                     }
                     /**
                      * Yaca analyser URL changes depending on deploy target, so it will be calculated
@@ -1023,10 +998,10 @@
                         msg = msg.concat(') and links ').concat(YACA_NBodySimulator.link_list_visible.length);
                         msg = msg.concat(' (').concat(YACA_NBodySimulator.link_list.length);
                         msg = msg.concat(') ');
-                        msg = msg.concat(' - iterations ').concat(iterations);                        
+                   //   msg = msg.concat(' - iterations ').concat(iterations);                        
                         msg = msg.concat(' - ');                         
                         if (YACA_Options.RUN_IMPORT) {
-                            msg = msg.concat(' last import ').concat(g_lastUpdate.toLocaleTimeString());
+                            msg = msg.concat(' last import ').concat(this.lastUpdate.toLocaleTimeString());
                         } else {
                             msg = msg.concat(' import is not active');
                         }
@@ -1037,11 +1012,11 @@
                      * User interface to change parameters
                      */
                 createGui(gui) {
-                    g_gui_folder1 = gui.addFolder('Import Options');
+                    this.gui_folder1 = gui.addFolder('Import Options');
 			        var folder02 = gui.addFolder('Rendering Options');
                     var folder03 = gui.addFolder('N-Body Simulation');
                     var that = this;
-                    g_gui_folder1.add(YACA_Options, 'RUN_IMPORT').listen().name('Active').onChange(function(value) {
+                    this.gui_folder1.add(YACA_Options, 'RUN_IMPORT').listen().name('Active').onChange(function(value) {
                         if (YACA_Options.RUN_IMPORT) {
                            if (0 === YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST.length) {
                                 that.http.callDELETE(that.url + "/filterWhite");
@@ -1055,16 +1030,16 @@
                             }
                         }
                     });
-            	    g_gui_folder1.add(guiEvents, 'resetModelEvent').listen().name("Reset Model");
-                    g_gui_folder1.add(guiEvents, 'downloadModelEvent').listen().name("Download Model");
-                    g_gui_folder1.add(YACA_Options, 'RUN_IMPORT_INTERVAL', 500, 5000).step(500).listen().name("Intervall").onChange(
+            	    this.gui_folder1.add(guiEvents, 'resetModelEvent').listen().name("Reset Model");
+                    this.gui_folder1.add(guiEvents, 'downloadModelEvent').listen().name("Download Model");
+                    this.gui_folder1.add(YACA_Options, 'RUN_IMPORT_INTERVAL', 500, 5000).step(500).listen().name("Intervall").onChange(
                         function(value) {
                             clearInterval(modelTimer);
                             modelTimer = setInterval(function() {
                                 executeTimerGetYacaAnalyserModel();
                             }, YACA_Options.RUN_IMPORT_INTERVAL);
                         });
-                    g_gui_folder1.add(YACA_Options, 'RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST').listen().name('Filter White List').onChange(
+                    this.gui_folder1.add(YACA_Options, 'RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST').listen().name('Filter White List').onChange(
                         function(value) {
                             if (0 === value.length) {
                                 that.http.callDELETE(that.url + "/filterWhite");
@@ -1076,7 +1051,7 @@
                             }
                             that.currentWhiteListFilter = value;
                         });
-                    g_gui_folder1.add(YACA_Options, 'RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST').listen().name('Filter Black List').onChange(
+                    this.gui_folder1.add(YACA_Options, 'RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST').listen().name('Filter Black List').onChange(
                         function(value) {
                             if (0 === value.length) {
                                 that.http.callDELETE(that.url + "/filterBlack");
@@ -1088,6 +1063,7 @@
                             }
                             that.currentBlackListFilter = value;
                         });
+					this.gui_folder1.open();
 					
 					folder02.add(guiEvents, 'resetRenderingEvent').listen().name("Reset Position");
                     folder02.add(YACA_Options, 'FILTER_ALL_CALL_DEEP_CALLED', 0, 20).listen().name('Add Called Nodes').step(1);
@@ -1309,16 +1285,17 @@
    			var vmCallback = function(responseText) {
             	var input_vm = JSON.parse(responseText);
             
- 			    if (typeof(g_gui_pid) !== "undefined") {
-                        g_gui_folder1.remove(g_gui_pid);
+ 			    if (typeof(yacaMonitor.gui_pid) !== "undefined") {
+                        yacaMonitor.gui_folder1.remove(yacaMonitor.gui_pid);
                 }
 
 				if(input_vm.process_id_available.length==0) {
 						input_vm.process_id_available.push(input_vm.process_id_active);
 				}
+			 
 				var _yacaMonitor = yacaMonitor;
-                g_gui_pid = g_gui_folder1.add(YACA_Options, 'ACTIVE_PID',
-	 			input_vm.process_id_available).listen().name('Process ID').onChange(
+              	yacaMonitor.gui_pid = yacaMonitor.gui_folder1.add(YACA_Options, 'ACTIVE_PID',
+	 		 	input_vm.process_id_available).listen().name('Process ID').onChange(
 	                        function(value) {
                                if (value) {		
 							    	_yacaMonitor.http.callPUT(_yacaMonitor.url + "/process/id", YACA_Options.ACTIVE_PID);
