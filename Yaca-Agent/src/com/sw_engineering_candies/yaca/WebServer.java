@@ -147,7 +147,9 @@ public class WebServer extends Thread {
 	}
 
 	try {
-	    server.close();
+	    if (null != server) {
+		server.close();
+	    }
 	} catch (IOException e) {
 	    LOGGER.error(e.getMessage());
 	    LOGGER.info("server stopped");
@@ -178,11 +180,12 @@ public class WebServer extends Thread {
 	out.flush();
     }
 
-    private void sendResponseForVMRequest(final OutputStream out) throws UnsupportedEncodingException, IOException, InterruptedException {
+    private void sendResponseForVMRequest(final OutputStream out) throws UnsupportedEncodingException, IOException,
+	    InterruptedException {
 
 	Analyser.findOtherAttachableJavaVMs();
 	LOGGER.info("VirtualMachines=" + Analyser.allVirtualMachines);
-	
+
 	Thread.sleep(100);
 
 	// Create content of response
