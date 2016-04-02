@@ -13,11 +13,9 @@
 <!-- libraries from THREE.js -->
 <script type="text/javascript" src="monitor/external/detector.js"></script>
 <script type="text/javascript" src="monitor/external/three.min.js"></script>
-<script type="text/javascript"
-	src="monitor/external/trackballcontrols.js"></script>
+<script type="text/javascript" src="monitor/external/trackballcontrols.js"></script>
 <script type="text/javascript" src="monitor/external/projector.js"></script>
-<script type="text/javascript"
-	src="monitor/external/helvetiker_regular.typeface.js"></script>
+<script type="text/javascript" src="monitor/external/helvetiker_regular.typeface.js"></script>
 <script type="text/javascript" src="monitor/external/stats.min.js"></script>
 
 <!-- libraries from traceur.js -->
@@ -925,25 +923,29 @@
                                 node.text.rotation.z = this.camera.rotation._z;
                             }
                         } else if (YACA_Options.DISPLAY_NAMES || node === this.activeNode) {
-                            var _fontshapes = THREE.FontUtils.generateShapes(node.alias, {
-                                size: 14
-                            });
-                            var textGeometry = new THREE.ShapeGeometry(_fontshapes);
-                            var textMaterial = new THREE.MeshBasicMaterial({
-                                color: this.palette.getColorCodeAsInteger(node.clusterId)
-                            });
-                            var textMesh = new THREE.Mesh(textGeometry, textMaterial);
-                            node.textCreated = true;
-                            node.text = textMesh;
-                            this.scene.add(textMesh);
-                        }
-                    }
+
+							var geometry = new THREE.TextGeometry( node.alias, {
+	    							size: 14,
+									height: 1
+	    					});
+	    					var material = new THREE.MeshPhongMaterial({
+		  							color: this.palette.getColorCodeAsInteger(node.clusterId), 
+	    					});
+	    					node.text = new THREE.Mesh(geometry, material);
+	   						node.text.castShadow = true;
+							node.text.receiveShadow = true;
+   							node.textCreated = true;
+	    					this.scene.add(node.text);
+						}
+                  	}
+
                     /**
                      * Renders a link - optional with arrow head
                      */
-                renderArrowElementForLink(link) {
-                    // Truncate the end points of a line
-                    var moveEndPoints = function(source_position, source_delta, target_position, target_delta) {
+               		renderArrowElementForLink(link) {
+                    
+						// Truncate the end points of a line
+                    	var moveEndPoints = function(source_position, source_delta, target_position, target_delta) {
                             var deltaX = (source_position.x - target_position.x);
                             var deltaY = (source_position.y - target_position.y);
                             var deltaZ = (source_position.z - target_position.z);
