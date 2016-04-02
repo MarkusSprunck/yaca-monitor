@@ -14,8 +14,7 @@ else
   exit 1
 fi
 
-/usr/bin/open -a "/Applications/Google Chrome.app" 'http://localhost:33333/monitor' 
-
 echo "Start Yaca Agent."
-$JAVA_RUN_TIME  -jar "$JAR2"
+$JAVA_RUN_TIME  -jar "$JAR2" &
 
+/usr/bin/open -a "/Applications/Google Chrome.app" 'http://localhost:33333/monitor' 
