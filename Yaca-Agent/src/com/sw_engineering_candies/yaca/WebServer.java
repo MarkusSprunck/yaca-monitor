@@ -210,7 +210,7 @@ public class WebServer extends Thread {
 	    sb.append(line + "\r\n");
 	}
 	fileContent.close();
-	byte[] bytesBody = sb.toString().substring(0, sb.toString().length()-2).getBytes("UTF-8");
+	byte[] bytesBody = sb.toString().substring(0, sb.toString().length() - 2).getBytes("UTF-8");
 
 	// For HTTP/1.0 or later send a MIME header
 	final String headerString = "HTTP/1.1 200 OK" + NL //
