@@ -1,45 +1,43 @@
 <!doctype html>
 <html>
-<head>
-<title>Yaca-Monitor 4.0</title>
-
-<!-- links -->
-<link type="image/x-icon" rel="icon" href="favicon.ico" />
-<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
-
-<!-- libraries from DAT.GUI -->
-<script type="text/javascript" src="monitor/external/dat.gui.min.js"></script>
-
-<!-- libraries from THREE.js -->
-<script type="text/javascript" src="monitor/external/three.js"></script>
-<script type="text/javascript" src="monitor/external/detector.js"></script>
-<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
-<script type="text/javascript"
-	src="monitor/external/trackballcontrols.js"></script>
-<script type="text/javascript" src="monitor/external/projector.js"></script>
-<!-- 
-<script type="text/javascript" src="monitor/external/helvetiker_regular.typeface.js"></script>
--->
-<script type="text/javascript" src="monitor/external/stats.min.js"></script>
-
-<!-- libraries from traceur.js -->
-<script type="text/javascript" src="monitor/external/traceur.js"></script>
-<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
-
-</head>
-<body class="main">
-
-	<!-- This code uses Traceur a compiler that takes ECMAScript Edition 6 
-             and compiles it down to regular Javascript that runs in your browser. 
-        -->
-	<script type="module">
+	
+	<head>
+		<title>Yaca-Monitor 4.0</title>
+		
+		<!-- links -->
+		<link type="image/x-icon" rel="icon" href="favicon.ico" />
+		<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
+		
+		<!-- libraries from DAT.GUI -->
+		<script type="text/javascript" src="monitor/external/traceur.js"></script>
+		<script type="text/javascript" src="monitor/external/dat.gui.min.js"></script>
+		
+		<!-- libraries from THREE.js -->
+		<script type="text/javascript" src="monitor/external/three.js"></script>
+		<script type="text/javascript" src="monitor/external/detector.js"></script>
+		<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
+		<script type="text/javascript" src="monitor/external/trackballcontrols.js"></script>
+		<script type="text/javascript" src="monitor/external/projector.js"></script>
+		<script type="text/javascript" src="monitor/external/stats.min.js"></script>
+		
+		<!-- start libraries from traceur.js -->
+		<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
+		
+	</head>
+	
+	<body class="main">
+		
+		<!-- This code uses Traceur a compiler that takes ECMAScript Edition 6 
+			 and compiles it down to regular Javascript that runs in your browser. -->
+		<script type="module">
 
 ///////////////////////////////////////////////////////////////////////////
 // class SimulationOptions
 // Options for n-body simulation and rendering
 ///////////////////////////////////////////////////////////////////////////
-class SimulationOptions {
 
+class SimulationOptions {
+	
 	constructor() {
 		// General Options
 		this.RUN_IMPORT = true;
@@ -47,23 +45,23 @@ class SimulationOptions {
 		this.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST = '';
 		this.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST = '';
 		this.ACTIVE_PID = "----";
-
+		
 		// Show Nodes by
 		this.FILTER_ALL_CALL_DEEP_CALLED = 0;
 		this.FILTER_ALL_CALL_DEEP_CALLER = 0;
-
+		
 		// Filter Activity
 		this.RENDER_THRESHOLD = 80.0;
 		this.RENDER_INACTIVE = false;
-
+		
 		// Extended Options
 		this.MODEL_VIEW_FILTER = '';
 		this.MODEL_VIEW_FILTER_INVERT = false;
-
+		
 		// Extended Options
 		this.DISPLAY_DIRECTIONS = true;
 		this.DISPLAY_NAMES = true;
-
+		
 		// N-Body Simulation
 		this.RUN_SIMULATION = true;
 		this.DISTANCE = 110;
@@ -71,14 +69,11 @@ class SimulationOptions {
 		this.CHARGE = 200;
 		this.GRAVITY = 800;
 		this.FORCE_2D = false;
-		this.GUI_DISTANCE = 600;
-
+		
 		// Others ...
 		this.SPHERE_RADIUS_MINIMUM = 20;
 		this.SPHERE_RADIUS = 1200;
 		this.THETA = 0.8;
-		this.USE_OCULUS_RIFT = false;
-		this.OPACITY = 100;
 	}
 }
 
@@ -87,6 +82,7 @@ class SimulationOptions {
 // class NNode
 // Defines a single node for n-body simulation and rendering
 ///////////////////////////////////////////////////////////////////////////
+
 class NNode {
 
 	constructor(node) {
@@ -113,19 +109,19 @@ class NNode {
 		this.callerCallerAnalysisDone = false;
 		this.isIndirectVisible = false;
 	}
-
+	
 	addCaller(node) {
 		if (this.callers.indexOf(node) === -1) {
 			this.callers.push(node);
 		}
 	}
-
+	
 	addCallee(node) {
 		if (this.callees.indexOf(node) === -1) {
 			this.callees.push(node);
 		}
 	}
-
+	
 	setCalleesVisible(nodeList, callDeep) {
 		if (!this.callerCalleeAnalysisDone) {
 			this.callerCalleeAnalysisDone = true;
@@ -141,7 +137,7 @@ class NNode {
 			}
 		}
 	}
-
+	
 	setCallersVisible(nodeList, callDeep) {
 		if (!this.callerCallerAnalysisDone) {
 			this.callerCallerAnalysisDone = true;
@@ -157,29 +153,29 @@ class NNode {
 			}
 		}
 	}
-
+	
 	update(node) {
 		this.callFilter();
 		this.calls = this.isFiltered ? node.calls : 0;
 	}
-
+	
 	callFilter() {
 		this.isFiltered = YACA_NodeRegexFilter.test(this.name);
 	}
-
+	
 	getCalls() {
 		return this.calls;
 	}
-
+	
 	isVisible() {
 		return this.isIndirectVisible || (this.getActivity() >= YACA_Options.RENDER_THRESHOLD) && this.isFiltered;
 	}
-
+	
 	getActivity() {
 		return (this.getCalls() <= 0) ? 0.0 : 100.0 * (Math.log(this.getCalls()) / Math
 			.log(YACA_NBodySimulator.maxNodeCalls));
 	}
-
+	
 	initRandomPosition() {
 		var gamma = 2 * Math.PI * Math.random();
 		var delta = Math.PI * Math.random();
@@ -188,7 +184,6 @@ class NNode {
 		this.y = radius * Math.sin(delta) * Math.sin(gamma);
 		this.z = radius * Math.cos(delta);
 	}
-
 }
 
 
@@ -196,14 +191,16 @@ class NNode {
 // class NLink
 // Defines a link between two nodes for n-body simulation and rendering
 ///////////////////////////////////////////////////////////////////////////
+
 class NLink {
 
 	constructor(link, me) {
+		
 		// Simulation of spring forces between nodes
 		this.id = link.id;
 		this.source = me.node_list[link.sourceId];
 		this.target = me.node_list[link.targetId];
-
+		
 		// Rendering elements
 		this.threeElement = {};
 		this.linkWebGLCreated = false;
@@ -212,7 +209,7 @@ class NLink {
 		this.source.addCallee(this.target);
 		this.target.addCaller(this.source);
 	}
-
+	
 	isVisible() {
 		return this.source.isVisible() && this.target.isVisible();
 	}
@@ -224,8 +221,9 @@ class NLink {
 // class BarnesHutAlgorithmOctTre
 // Implementation of OctTree for simulation
 ///////////////////////////////////////////////////////////////////////////
-class BarnesHutAlgorithmOctTree {
 
+class BarnesHutAlgorithmOctTree {
+	
 	constructor(options) {
 		// Parameter needed for the simulation
 		if (typeof(options) !== "undefined") {
@@ -246,7 +244,7 @@ class BarnesHutAlgorithmOctTree {
 			}
 		}
 	}
-
+	
 	calcGravityForce(node) {
 		var deltaX = node.x;
 		var deltaY = node.y;
@@ -258,7 +256,7 @@ class BarnesHutAlgorithmOctTree {
 			node.force_z -= (deltaZ) / radius / radius * YACA_Options.GRAVITY;
 		}
 	}
-
+	
 	run(nodes) {
 		var size = YACA_Options.SPHERE_RADIUS;
 		YACA_OctTreeRoot = new BarnesHutAlgorithmOctNode(-size, size, -size, size, -size, size);
@@ -276,7 +274,6 @@ class BarnesHutAlgorithmOctTree {
 			}
 		}
 	}
-
 }
 
 
@@ -285,8 +282,9 @@ class BarnesHutAlgorithmOctTree {
 // Implementation of Barnes-Hut algorithm for a three-dimensional simulation 
 // of charge and gravity
 ///////////////////////////////////////////////////////////////////////////
-class BarnesHutAlgorithmOctNode {
 
+class BarnesHutAlgorithmOctNode {
+	
 	constructor(xMin, xMax, yMin, yMax, zMin, zMax) {
 		this.xMin = xMin;
 		this.xMax = xMax;
@@ -302,19 +300,20 @@ class BarnesHutAlgorithmOctNode {
 		this.children = null;
 		this.diameter = (((xMax - xMin) + (yMax - yMin) + (zMax - zMin)) / 3);
 	}
-
+	
 	isFilled() {
 		return (this.node !== null);
 	}
-
+	
 	isParent() {
 		return (this.children !== null);
 	}
-
+	
 	isFitting(node) {
-		return ((node.x >= this.xMin) && (node.x <= this.xMax) && (node.y >= this.yMin) && (node.y <= this.yMax) && (node.z >= this.zMin) && (node.z <= this.zMax));
+		return ((node.x >= this.xMin) && (node.x <= this.xMax) && (node.y >= this.yMin) 
+			 && (node.y <= this.yMax) && (node.z >= this.zMin) && (node.z <= this.zMax));
 	}
-
+	
 	addNode(new_node) {
 		if (this.isFilled() || this.isParent()) {
 			var relocated_node;
@@ -337,24 +336,18 @@ class BarnesHutAlgorithmOctNode {
 				var xMiddle = (this.xMin + this.xMax) / 2;
 				var yMiddle = (this.yMin + this.yMax) / 2;
 				var zMiddle = (this.zMin + this.zMax) / 2;
+				
 				// create children
 				this.children = [];
-				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax,
-					yMiddle, this.yMax, zMiddle, this.zMax));
-				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle,
-					yMiddle, this.yMax, zMiddle, this.zMax));
-				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle,
-					this.yMin, yMiddle, zMiddle, this.zMax));
-				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax,
-					this.yMin, yMiddle, zMiddle, this.zMax));
-				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax,
-					yMiddle, this.yMax, this.zMin, zMiddle));
-				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle,
-					yMiddle, this.yMax, this.zMin, zMiddle));
-				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle,
-					this.yMin, yMiddle, this.zMin, zMiddle));
-				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax,
-					this.yMin, yMiddle, this.zMin, zMiddle));
+				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax, yMiddle, this.yMax, zMiddle, this.zMax));
+				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, yMiddle, this.yMax, zMiddle, this.zMax));
+				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, this.yMin, yMiddle, zMiddle, this.zMax));
+				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax, this.yMin, yMiddle, zMiddle, this.zMax));
+				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax, yMiddle, this.yMax, this.zMin, zMiddle));
+				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, yMiddle, this.yMax, this.zMin, zMiddle));
+				this.children.push(new BarnesHutAlgorithmOctNode(this.xMin, xMiddle, this.yMin, yMiddle, this.zMin, zMiddle));
+				this.children.push(new BarnesHutAlgorithmOctNode(xMiddle, this.xMax,this.yMin, yMiddle, this.zMin, zMiddle));
+				
 				// re-locate old node (add into children)
 				relocated_node = this.node;
 				this.node = null;
@@ -364,6 +357,7 @@ class BarnesHutAlgorithmOctNode {
 				this.sum_z = 0;
 				this.addChildNode(relocated_node);
 			}
+			
 			// now add new node into children
 			if (this.isParent()) {
 				this.addChildNode(new_node);
@@ -379,7 +373,7 @@ class BarnesHutAlgorithmOctNode {
 			this.node.force_z = 0.0;
 		}
 	}
-
+	
 	addChildNode(node) {
 		if (this.isParent()) {
 			for (var index = 0; index < 8; index++) {
@@ -390,10 +384,11 @@ class BarnesHutAlgorithmOctNode {
 				}
 			}
 		}
+		
 		// Unable to add node -> has to be relocated
 		YACA_OctTreeRoot.addNode(node);
 	}
-
+	
 	calculateForces(new_node) {
 		if (this.sum_mass > 0.1 || this.isFilled()) {
 			var deltaX, deltaY, deltaZ;
@@ -423,7 +418,7 @@ class BarnesHutAlgorithmOctNode {
 			}
 		}
 	}
-
+	
 	calculateAveragesAndSumOfMass() {
 		if (this.isParent()) {
 			var child;
@@ -454,8 +449,9 @@ class BarnesHutAlgorithmOctNode {
 // Implementation of n-body simulator makes the Branes-Hut simulation and 
 // adds the link forces
 ///////////////////////////////////////////////////////////////////////////
-class NBodySimulator {
 
+class NBodySimulator {
+	
 	constructor() {
 		// all existing nodes and links
 		this.node_list = [];
@@ -469,7 +465,7 @@ class NBodySimulator {
 		this.link_list_visible_last = [];
 		this.maxNodeCalls = 0;
 	}
-
+	
 	updateModel(input_model) {
 		// create or update nodes
 		this.maxNodeCalls = 0;
@@ -500,7 +496,7 @@ class NBodySimulator {
 			}
 		}
 	}
-
+	
 	applyFilter() {
 		this.node_list_visible_last = this.node_list_visible;
 		this.link_list_visible_last = this.link_list_visible;
@@ -550,7 +546,7 @@ class NBodySimulator {
 			}
 		}
 	}
-
+	
 	simulateAllForces() {
 		// Execute Barnes-Hut simulation
 		this.octTree = new BarnesHutAlgorithmOctTree();
@@ -570,7 +566,7 @@ class NBodySimulator {
 			me.resetForces(node);
 		});
 	}
-
+	
 	/**
 	 * Each link acts as simple spring. There are two types of nodes and links.
 	 */
@@ -589,7 +585,7 @@ class NBodySimulator {
 			link.target.force_z += (deltaZ) * factor;
 		}
 	}
-
+	
 	/**
 	 * Ensure that the new position is in the sphere. Nodes which leave the sphere
 	 * would be ignored by OctTree (Barnes-Hut-Algorithm).
@@ -603,7 +599,7 @@ class NBodySimulator {
 				1 - YACA_Options.SPHERE_RADIUS, node.z),
 			YACA_Options.SPHERE_RADIUS - 1);
 	}
-
+	
 	/**
 	 * Ensure that the new position is in the sphere
 	 */
@@ -615,7 +611,7 @@ class NBodySimulator {
 			node.force_z *= YACA_Options.SPHERE_RADIUS_MINIMUM / radius;
 		}
 	}
-
+	
 	/**
 	 * Move the nodes depending of the forces
 	 */
@@ -624,7 +620,7 @@ class NBodySimulator {
 		node.y += node.force_y;
 		node.z += node.force_z;
 	}
-
+	
 	/**
 	 * Reset all forces of the node to zero
 	 */
@@ -633,11 +629,10 @@ class NBodySimulator {
 		node.force_y = 0;
 		node.force_z = 0;
 	}
-
 }
 
 /**
- * global variables
+ * global variables for N-Body-Simulation
  */
 var YACA_Options = new SimulationOptions();
 var YACA_NodeRegexFilter = new RegExp(YACA_Options.MODEL_VIEW_FILTER);
@@ -648,8 +643,9 @@ var YACA_NBodySimulator = new NBodySimulator();
 // class HttpRequestUtils
 // Simple Helper to send HTTP requests
 ///////////////////////////////////////////////////////////////////////////
-class HttpRequestUtils {
 
+class HttpRequestUtils {
+	
 	callDELETE(url) {
 		var xmlHttp = null;
 		xmlHttp = new XMLHttpRequest();
@@ -657,7 +653,7 @@ class HttpRequestUtils {
 		xmlHttp.setRequestHeader("Cache-Control", "no-cache");
 		xmlHttp.send(null);
 	}
-
+	
 	callPUT(url, value) {
 		var xmlHttp = null;
 		xmlHttp = new XMLHttpRequest();
@@ -666,7 +662,7 @@ class HttpRequestUtils {
 		xmlHttp.setRequestHeader("Content-type", "text/plain");
 		xmlHttp.send(value);
 	}
-
+	
 	callGET(url, callback) {
 		var xmlHttp = null;
 		xmlHttp = new XMLHttpRequest();
@@ -688,13 +684,15 @@ class HttpRequestUtils {
 // Simple Helper to create color codes. The colors are cached to improve 
 // performance.
 ///////////////////////////////////////////////////////////////////////////
-class ColorPalette {
 
+class ColorPalette {
+	
 	constructor() {
 		this.hash = new Map();
 	}
-
+	
 	getColorHex(value) {
+		
 		// Converts a integer to a two char hex code
 		var integerToHex = function(value) {
 			value = Math.max(0, Math.min(parseInt(value, 10), 255));
@@ -702,6 +700,7 @@ class ColorPalette {
 			var charSecond = "0123456789ABCDEF".charAt(value % 16);
 			return charFirst + charSecond;
 		};
+		
 		// Caches caculated colors 
 		var key = value.toString();
 		if (null == this.hash.get(key)) {
@@ -713,15 +712,15 @@ class ColorPalette {
 		}
 		return this.hash.get(key);
 	}
-
+	
 	getColorCodeAsInteger(value) {
 		return parseInt(this.getColorHex(value), 16);
 	}
-
+	
 	getColorCodeAsHexString(value) {
 		return '0x' + this.getColorHex(value);
 	}
-
+	
 }
 
 
@@ -729,30 +728,31 @@ class ColorPalette {
 //  class YacaMonitor
 //  Main class to render YACA Monitor
 ///////////////////////////////////////////////////////////////////////////
+
 class YacaMonitor {
-
+	
 	constructor() {
-			this.scene;
-			this.camera;
-			this.renderer;
-			this.control;
-			this.objects = [];
-			this.light;
-			this.container;
-			this.projector;
-			this.http = new HttpRequestUtils();
-			this.palette = new ColorPalette();
-			this.lastUpdate = new Date();
-			this.currentWhiteListFilter = "";
-			this.currentBlackListFilter = "";
-			this.modelText;
-			this.url = this.getAnalyserServiceURL();
-			this.activeNode = null;
-			this.gui_pid;
-			this.gui_folder1 = null;
-			this.font;
-		}
-
+		this.scene;
+		this.camera;
+		this.renderer;
+		this.control;
+		this.objects = [];
+		this.light;
+		this.container;
+		this.projector;
+		this.http = new HttpRequestUtils();
+		this.palette = new ColorPalette();
+		this.lastUpdate = new Date();
+		this.currentWhiteListFilter = "";
+		this.currentBlackListFilter = "";
+		this.modelText;
+		this.url = this.getAnalyserServiceURL();
+		this.activeNode = null;
+		this.gui_pid;
+		this.gui_folder1 = null;
+		this.font;
+	}
+	
 	/**
 	 * Yaca analyser URL changes depending on deploy target, so it will be calculated
 	 */
@@ -762,7 +762,7 @@ class YacaMonitor {
 		var scheme_domain_port = window.location.href.substring(0, scheme_domain_port_length);
 		return scheme_domain_port;
 	}
-
+	
 	init() {
 		if (!Detector.webgl) {
 			document.body.appendChild(Detector.getWebGLErrorMessage());
@@ -772,34 +772,35 @@ class YacaMonitor {
 		}
 		return true;
 	}
-
+	
 	initWebGL() {
-		// Create this.renderer
+		
+		// Create the renderer
 		this.renderer = new THREE.WebGLRenderer({
 			antialias: true
 		});
 		this.renderer.setClearColor(0x333333, 1);
-
+		
 		// Container for WebGL rendering
 		this.container = $id('graphic-container');
-
+		
 		// Create Camera
 		this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 40000);
-
+		
 		// Create this.scene
 		this.scene = new THREE.Scene();
 		this.scene.add(this.camera);
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
-
+		
 		// Event handler
 		this.projector = new THREE.Projector();
-
+		
 		// Create light
 		this.light = new THREE.SpotLight(0xffffff, 1.25);
 		this.light.castShadow = true;
 		this.scene.add(this.light);
-
+		
 		// Create light near the center
 		var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
 		hemiLight.groundColor.setHSL(0.095, 1, 0.75);
@@ -818,7 +819,7 @@ class YacaMonitor {
 		this.control.addEventListener('change', rendererEventHandler);
 		this.control.noRotate = false;
 		this.updateLightPosition();
-
+		
 		// create Dat.GUI for standard rendering
 		this.googleDatGui = new dat.GUI({
 			autoPlace: false,
@@ -830,14 +831,14 @@ class YacaMonitor {
 		this.googleDatGui.domElement.style.right = '10px';
 		this.googleDatGui.domElement.style.top = '10px';
 		this.createStats();
-
+		
 		var _that = this;
 		var loader = new THREE.FontLoader();
 		loader.load('monitor/external/helvetiker_regular.typeface.js', function(response) {
 			_that.font = response;
 		});
 	}
-
+	
 	createStats() {
 		this.stats = new Stats();
 		this.stats.domElement.style.position = 'absolute';
@@ -846,7 +847,7 @@ class YacaMonitor {
 		this.stats.domElement.style.zIndex = 100;
 		this.container.appendChild(this.stats.domElement);
 	}
-
+	
 	/**
 	 * Move light dependent on the position of the camera. The rotation of the
 	 * graphic is done by movement of the camera and not the rotation of the scene
@@ -857,7 +858,7 @@ class YacaMonitor {
 		this.light.position.z = this.control.object.position.z + 1500;
 		this.light.target.position.set(0, 0, 0);
 	}
-
+	
 	/**
 	 * Creates and/or updates THRRE.js elements of the webGL graphic. Because the
 	 * creation of THREE.js elements is relative slow, most of the elements are
@@ -873,7 +874,7 @@ class YacaMonitor {
 			this.renderArrowElementForLink(links[i]);
 		}
 	}
-
+	
 	/**
 	 * Delete THRRE.js elements of the webGL graphic.
 	 */
@@ -891,7 +892,7 @@ class YacaMonitor {
 			}
 		}
 	}
-
+	
 	/**
 	 * Renders sphere for the node
 	 */
@@ -942,7 +943,7 @@ class YacaMonitor {
 				node.text.rotation.z = this.camera.rotation._z;
 			}
 		} else if (YACA_Options.DISPLAY_NAMES || node === this.activeNode) {
-
+			
 			var geometry = new THREE.TextGeometry(node.alias, {
 				font: this.font,
 				size: 14,
@@ -956,12 +957,12 @@ class YacaMonitor {
 			this.scene.add(node.text);
 		}
 	}
-
+	
 	/**
 	 * Renders a link - optional with arrow head
 	 */
 	renderArrowElementForLink(link) {
-
+		
 		// Truncate the end points of a line
 		var moveEndPoints = function(source_position, source_delta, target_position, target_delta) {
 			var deltaX = (source_position.x - target_position.x);
@@ -975,9 +976,11 @@ class YacaMonitor {
 			target_position.y += (deltaY) / radius * (target_delta);
 			target_position.z += (deltaZ) / radius * (target_delta);
 		};
+		
 		// Center position of the nodes
 		var source_position = new THREE.Vector3(link.source.x, link.source.y, link.source.z);
 		var target_position = new THREE.Vector3(link.target.x, link.target.y, link.target.z);
+		
 		// Just for recursive links have no source node
 		if (link.source.id === link.target.id) {
 			source_position.y += YACA_Options.DISTANCE;
@@ -1002,35 +1005,38 @@ class YacaMonitor {
 			this.scene.add(link.arrow);
 		}
 	}
+	
 	resetAllData() {
-			this.deleteWebGL(YACA_NBodySimulator.node_list_visible_last, YACA_NBodySimulator.link_list_visible_last);
-			this.deleteWebGL(YACA_NBodySimulator.node_list_visible, YACA_NBodySimulator.link_list_visible);
-			YACA_OctTreeRoot = {};
-			YACA_NBodySimulator = new NBodySimulator();
-		}
-		/**
-		 * OutcallPUT of status line
-		 */
+		this.deleteWebGL(YACA_NBodySimulator.node_list_visible_last, YACA_NBodySimulator.link_list_visible_last);
+		this.deleteWebGL(YACA_NBodySimulator.node_list_visible, YACA_NBodySimulator.link_list_visible);
+		YACA_OctTreeRoot = {};
+		YACA_NBodySimulator = new NBodySimulator();
+	}
+	
+	/**
+	 * OutcallPUT of status line
+	 */
 	updateStatusLine(iterations) {
-			var msg = '';
-			msg = msg.concat('Nodes ').concat(YACA_NBodySimulator.node_list_visible.length);
-			msg = msg.concat(' (').concat(YACA_NBodySimulator.node_list.length);
-			msg = msg.concat(') and links ').concat(YACA_NBodySimulator.link_list_visible.length);
-			msg = msg.concat(' (').concat(YACA_NBodySimulator.link_list.length);
-			msg = msg.concat(') ');
-			//   msg = msg.concat(' - iterations ').concat(iterations);                        
-			msg = msg.concat(' - ');
-			if (YACA_Options.RUN_IMPORT) {
-				msg = msg.concat(' last import ').concat(this.lastUpdate.toLocaleTimeString());
-			} else {
-				msg = msg.concat(' import is not active');
-			}
-
-			$id('statusLine1').innerHTML = msg;
+		var msg = '';
+		msg = msg.concat('Nodes ').concat(YACA_NBodySimulator.node_list_visible.length);
+		msg = msg.concat(' (').concat(YACA_NBodySimulator.node_list.length);
+		msg = msg.concat(') and links ').concat(YACA_NBodySimulator.link_list_visible.length);
+		msg = msg.concat(' (').concat(YACA_NBodySimulator.link_list.length);
+		msg = msg.concat(') ');
+		msg = msg.concat(' - process ').concat(YACA_Options.ACTIVE_PID);
+		msg = msg.concat(' - ');
+		if (YACA_Options.RUN_IMPORT) {
+			msg = msg.concat(' last import ').concat(this.lastUpdate.toLocaleTimeString());
+		} else {
+			msg = msg.concat(' import is not active');
 		}
-		/**
-		 * User interface to change parameters
-		 */
+		
+		$id('statusLine1').innerHTML = msg;
+	}
+	
+	/**
+	 * User interface to change parameters
+	 */
 	createGui(gui) {
 		this.gui_folder1 = gui.addFolder('Import Options');
 		var folder02 = gui.addFolder('Rendering Options');
@@ -1084,7 +1090,7 @@ class YacaMonitor {
 				that.currentBlackListFilter = value;
 			});
 		this.gui_folder1.open();
-
+		
 		folder02.add(guiEvents, 'resetRenderingEvent').listen().name("Reset Position");
 		folder02.add(YACA_Options, 'FILTER_ALL_CALL_DEEP_CALLED', 0, 20).listen().name('Add Called Nodes').step(1);
 		folder02.add(YACA_Options, 'FILTER_ALL_CALL_DEEP_CALLER', 0, 20).listen().name('Add Caller Nodes').step(1);
@@ -1099,22 +1105,22 @@ class YacaMonitor {
 			changeModelViewFilter();
 		});
 		folder02.add(YACA_Options, 'MODEL_VIEW_FILTER_INVERT').name('Filter Invert').listen().onChange(invertFilterEventHandler);
-		folder02.add(YACA_Options, 'GUI_DISTANCE', 0, YACA_Options.SPHERE_RADIUS).step(100.0).listen().name('GUI Distance');
 		folder02.add(YACA_Options, 'DISPLAY_NAMES').name('Show Labels');
 		folder02.add(YACA_Options, 'FORCE_2D').listen().name('Force 2D');
-		folder02.add(YACA_Options, 'OPACITY', 20.0, 100.0).step(10.0).listen().name('Opacity');
-
+		
 		folder03.add(YACA_Options, 'RUN_SIMULATION').listen().name('Run');
 		folder03.add(YACA_Options, 'DISTANCE', 40, 200).step(10.0).listen().name('Link Distance');
 		folder03.add(YACA_Options, 'SPRING', 0.0, 120).step(10.0).listen().name('Link Spring');
 		folder03.add(YACA_Options, 'CHARGE', 10, 400).step(10.0).listen().name('Charge');
 		folder03.add(YACA_Options, 'GRAVITY', 10, 1600).step(100.0).listen().name('Gravity');
-
 	}
 }
+
+
 window.onbeforeunload = function(e) {
 	if (isRunning) {
-		yacaMonitor.http.callDELETE(yacaMonitor.url + "/tasks");
+		// TODO here the server should be terminated
+		// yacaMonitor.http.callDELETE(yacaMonitor.url + "/tasks");
 		isRunning = false;
 	}
 };
@@ -1194,6 +1200,7 @@ var invertFilterEventHandler = function(value) {
 };
 
 var mouseMoveEventHandler = function(event) {
+	
 	// Decode the mouse event and prepare raycaster
 	var mouse = {};
 	mouse.x = ((event.clientX) / (window.innerWidth - yacaMonitor.renderer.domElement.offsetLeft)) * 2 - 1;
@@ -1201,6 +1208,7 @@ var mouseMoveEventHandler = function(event) {
 	var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
 	vector.unproject(yacaMonitor.camera);
 	var raycaster = new THREE.Raycaster(yacaMonitor.camera.position, vector.sub(yacaMonitor.camera.position).normalize());
+	
 	// Find first object
 	var intersects = raycaster.intersectObjects(yacaMonitor.objects);
 	if (intersects.length > 0 && intersects[0].object.visible) {
@@ -1210,14 +1218,13 @@ var mouseMoveEventHandler = function(event) {
 		yacaMonitor.renderer.domElement.style.cursor = "default";
 		yacaMonitor.activeNode = null;
 	}
-	if (YACA_Options.USE_OCULUS_RIFT) {
-		yacaMonitor.renderer.domElement.style.cursor = "none";
-	}
 };
 
 var mouseDownEventHandler = function(event) {
+	
 	// Stop other event listeners from receiving this event
 	event.preventDefault();
+	
 	if (event.which == 1) {
 		// Decode the mouse event and prepare raycaster
 		var mouse = {};
@@ -1302,7 +1309,8 @@ var resizeCallback = function() {
 
 var getTimeStampAsString = function() {
 	var date = new Date();
-	return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds() + '-' + date.getMilliseconds();
+	return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + '-' 
+		 + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds() + '-' + date.getMilliseconds();
 };
 
 /**
@@ -1365,7 +1373,7 @@ var executeTimerRunNBodySimulation = function() {
 };
 
 /** 
- * Try to start the application
+ * Sstart the application
  */
 var isRunning = false;
 var modelTimer;
@@ -1385,30 +1393,23 @@ if (yacaMonitor.init()) {
 	isRunning = true;
 }
 
-    </script>
-
-	<!-- Content area supports drop of model files 
-        -->
-	<div id="graphic-container" class="filedrag"
-		style="display: inline-flex">
-		<input id="fileselect" type="file" hidden="true" name="fileselect[]"
-			multiple="multiple" />
-	</div>
-
-	<!-- Link supports drag of model files 
-        -->
-	<a id='downloadId' hidden="true" draggable="true"></a>
-
-	<!-- Status line for simulator 
-        -->
-	<div id="statusLine1" class="statusLine"></div>
-
-	<!-- GitHub banner 
-        -->
-	<span id="forkongithub"><a
-		href="https://github.com/MarkusSprunck/yaca-monitor">Fork me on
-			GitHub</a></span>
-
-
-</body>
+		</script>
+		
+		<!-- Content area supports drop of model files -->
+		<div id="graphic-container" class="filedrag"
+			style="display: inline-flex">
+			<input id="fileselect" type="file" hidden="true" name="fileselect[]"
+				multiple="multiple" />
+		</div>
+		
+		<!-- Link supports drag of model files ->
+		<a id='downloadId' hidden="true" draggable="true"></a>
+		
+		<!-- Status line for simulator-->
+		<div id="statusLine1" class="statusLine"></div>
+		
+		<!-- GitHub banner ->
+		<span id="forkongithub"><a href="https://github.com/MarkusSprunck/yaca-monitor">Fork me onGitHub</a></span>
+		
+	</body>
 </html>
