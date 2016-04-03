@@ -40,38 +40,38 @@ import org.apache.commons.logging.LogFactory;
  * The main class of the application
  */
 public class Agent {
-
-    private static final Log LOGGER = LogFactory.getLog(Agent.class);
-
-    public final Model model = new Model();
-
-    public Analyser analyser = new Analyser(model);
-
-    private static int port = 33333;
-
-    private void startHTTPServerThread() {
-	String hostname = "localhost";
-	try {
-	    InetAddress addr = InetAddress.getLocalHost();
-	    hostname = addr.getCanonicalHostName();
-	} catch (UnknownHostException e) {
-	    LOGGER.error(e.getMessage());
+	
+	private static final Log	LOGGER		= LogFactory.getLog(Agent.class);
+	
+	public final Model			model		= new Model();
+	
+	public Analyser				analyser	= new Analyser(model);
+	
+	private static int			port		= 33333;
+	
+	private void startHTTPServerThread() {
+		String hostname = "localhost";
+		try {
+			InetAddress addr = InetAddress.getLocalHost();
+			hostname = addr.getCanonicalHostName();
+		} catch (UnknownHostException e) {
+			LOGGER.error(e.getMessage());
+		}
+		LOGGER.info("start server at http://" + hostname + ':' + port + "/monitor ");
+		final Thread serverThread = new WebServer(port, model);
+		serverThread.start();
 	}
-	LOGGER.info("start server at http://" + hostname + ':' + port + "/monitor ");
-	final Thread serverThread = new WebServer(port, model);
-	serverThread.start();
-    }
-
-    private void startAnalyser() {
-	analyser.start();
-    }
-
-    public static void main(final String[] args) {
-	LOGGER.info("(c) 2012-2016 by Markus Sprunck, v4.0");
-
-	Agent agent = new Agent();
-	agent.startHTTPServerThread();
-	agent.startAnalyser();
-    }
-
+	
+	private void startAnalyser() {
+		analyser.start();
+	}
+	
+	public static void main(final String[] args) {
+		LOGGER.info("(c) 2012-2016 by Markus Sprunck, v4.0");
+		
+		Agent agent = new Agent();
+		agent.startHTTPServerThread();
+		agent.startAnalyser();
+	}
+	
 }
