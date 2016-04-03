@@ -146,7 +146,7 @@ public class Analyser {
 			in.close();
 
 		    } catch (final IOException e) {
-			LOGGER.error("IOException " + e.getMessage());
+			LOGGER.debug("IOException " + e.getMessage());
 			isConnected = false;
 		    }
 		}
