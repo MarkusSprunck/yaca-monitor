@@ -28,32 +28,32 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */package com.sw_engineering_candies.yaca;
- 
- import java.io.BufferedReader;
- import java.io.IOException;
- import java.io.InputStream;
- import java.io.InputStreamReader;
- import java.lang.management.ManagementFactory;
- import java.util.ArrayList;
- import java.util.Enumeration;
- import java.util.List;
- import java.util.Properties;
- import java.util.concurrent.CopyOnWriteArrayList;
- import java.util.regex.Pattern;
- 
- import org.apache.commons.logging.Log;
- import org.apache.commons.logging.LogFactory;
- 
- import sun.tools.attach.HotSpotVirtualMachine;
- 
- import com.sun.tools.attach.AttachNotSupportedException;
- import com.sun.tools.attach.VirtualMachine;
- import com.sun.tools.attach.VirtualMachineDescriptor;
- 
- /**
-  * The class collects call stack data from the VM
-  */
- public class Analyser {
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import sun.tools.attach.HotSpotVirtualMachine;
+
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
+
+/**
+ * The class collects call stack data from the VM
+ */
+public class Analyser {
 	
 	/**
 	 * Constants
@@ -96,9 +96,7 @@
 					
 					// Update filter white list
 					final String filterWhite = model.getFilterWhiteList();
-					final Pattern patternWhiteList = Pattern.compile(filterWhite);
 					final String filterBlack = model.getFilterBlackList();
-					final Pattern patternBlackList = Pattern.compile(filterBlack);
 					
 					try {
 						final List<Node> entryList = new ArrayList<Node>(10);
@@ -108,8 +106,8 @@
 						while ((line = br.readLine()) != null) {
 							if (line.startsWith("\tat ") && line.length() > 10) {
 								LOGGER.debug(line);
-								final String temp2 = line.substring(4, line.lastIndexOf('('));
-								final String[] split = temp2.split("\\.");
+								final String fullMethodName = line.substring(4, line.lastIndexOf('(')).trim();
+								final String[] split = fullMethodName.split("\\.");
 								if (split.length > 2) {
 									final int indexOfMethodName = split.length - 1;
 									final int indexOfClassName = indexOfMethodName - 1;
@@ -120,9 +118,9 @@
 									}
 									
 									String packageString = packageName.toString();
-									final boolean isWhiteListOk = patternWhiteList.matcher(temp2).find();
+									final boolean isWhiteListOk = filterWhite.isEmpty() || fullMethodName.startsWith(filterWhite);
 									if (isWhiteListOk) {
-										final boolean isBlackListOk = filterBlack.isEmpty() || !patternBlackList.matcher(temp2).find();
+										final boolean isBlackListOk = filterBlack.isEmpty() || !fullMethodName.startsWith(filterBlack);
 										if (isBlackListOk) {
 											String className = split[indexOfClassName];
 											final Node entry = new Node();
@@ -222,4 +220,4 @@
 			LOGGER.error("invalid id=" + value);
 		}
 	}
- }
+}

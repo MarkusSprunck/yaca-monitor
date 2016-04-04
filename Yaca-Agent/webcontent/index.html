@@ -73,7 +73,7 @@ class SimulationOptions {
 		// General Options
 		this.RUN_IMPORT = true;
 		this.RUN_IMPORT_INTERVAL = 2000;
-		this.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST = '';
+		this.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST = 'com.sw_engineering_candies';
 		this.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST = '';
 		this.ACTIVE_PID = "----";
 		
@@ -82,11 +82,11 @@ class SimulationOptions {
 		this.FILTER_ALL_CALL_DEEP_CALLER = 0;
 		
 		// Filter Activity
-		this.RENDER_THRESHOLD = 80.0;
+		this.RENDER_THRESHOLD = 40.0;
 		this.RENDER_INACTIVE = false;
 		
 		// Extended Options
-		this.MODEL_VIEW_FILTER = '';
+		this.MODEL_VIEW_FILTER = 'yaca';
 		this.MODEL_VIEW_FILTER_INVERT = false;
 		
 		// Extended Options
@@ -1085,7 +1085,7 @@ class YacaMonitor {
 				} else {
 					that.http.callPUT(that.url + "/filterBlack", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST);
 				}
-			}
+			}	
 		});
 		this.gui_folder1.add(guiEvents, 'resetModelEvent').listen().name("Reset Model");
 		this.gui_folder1.add(guiEvents, 'downloadModelEvent').listen().name("Download Model");
@@ -1318,6 +1318,7 @@ var guiEvents = {
 		yacaMonitor.resetAllData();
 		yacaMonitor.http.callPUT(yacaMonitor.url + "/filterWhite", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST);
 		yacaMonitor.http.callPUT(yacaMonitor.url + "/filterBlack", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST);
+		yacaMonitor.http.callDELETE(yacaMonitor.url + "/tasks");
 	}
 };
 
@@ -1411,7 +1412,9 @@ var modelTimer;
 var yacaMonitor = new YacaMonitor();
 if (yacaMonitor.init()) {
 	yacaMonitor.http.callGET(yacaMonitor.url + "/process/ids", vmCallback);
-
+	yacaMonitor.http.callPUT(yacaMonitor.url + "/filterWhite", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST);
+	yacaMonitor.http.callPUT(yacaMonitor.url + "/filterBlack", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST);
+	
 	initFileDragAndDrop();
 	setInterval(executeTimerRunNBodySimulation, 150);
 	modelTimer = setInterval(executeTimerGetYacaAnalyserModel, YACA_Options.RUN_IMPORT_INTERVAL);

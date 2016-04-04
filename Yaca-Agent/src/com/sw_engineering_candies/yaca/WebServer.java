@@ -117,12 +117,16 @@ public class WebServer extends Thread {
 					model.reset();
 				} else if (request.startsWith("DELETE /filterWhite")) {
 					model.setFilterWhiteList("");
+					model.reset();
 				} else if (request.startsWith("DELETE /filterBlack")) {
 					model.setFilterBlackList("");
+					model.reset();
 				} else if (request.startsWith("PUT /filterWhite")) {
 					model.setFilterWhiteList(request.getBody());
+					model.reset();
 				} else if (request.startsWith("PUT /filterBlack")) {
 					model.setFilterBlackList(request.getBody());
+					model.reset();
 				} else if (request.startsWith("GET /process/ids")) {
 					sendResponseForVMRequest(out);
 				} else if (request.startsWith("PUT /process/id")) {
