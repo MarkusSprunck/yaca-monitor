@@ -6,10 +6,6 @@
 	<classpathentry kind="lib" path="lib/asm-all-4.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
-	<classpathentry kind="var" path="SDK_TOOLS_JAR">
-		<accessrules>
-			<accessrule kind="accessible" pattern="*"/>
-		</accessrules>
-	</classpathentry>
+	<classpathentry kind="lib" path="lib/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
