@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, Markus Sprunck <markus.sprunck@mnet-online.de>
+ * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -28,6 +28,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.sw_engineering_candies.yaca;
 
 import java.awt.BorderLayout;
@@ -55,48 +56,45 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * The main class of the application.
- * 
- * @author Markus Sprunck
- * @version $Revision: 1.0 $
  */
 public class YacaAgentTestClient {
-
-	private static final Log LOGGER = LogFactory.getLog(YacaAgentTestClient.class);
-
-	private static final String BEAN_NAME_MERGE_SORT = "mergeSort";
-
-	private static final String BEAN_NAME_QUICK_SORT = "quickSort";
-
-	private static final String BEAN_NAME_HEAP_SORT = "heapSort";
-
-	private static final int INPUT_ARRAY_SIZE = 10000;
-
-	private ISort sortBean;
-
-	private ApplicationContext springContext = null;
-
-	boolean isConnected = false;
-
-	Map<String, Long> counter = new HashMap<String, Long>(10);
-
-	Timer timer;
-	JButton stopButton;
-	JButton startButton;
-	ButtonGroup buttonGroup;
-	JRadioButton heapButton;
-	JRadioButton quickButton;
-	JRadioButton mergeButton;
-
+	
+	private static final Log	LOGGER					= LogFactory.getLog(YacaAgentTestClient.class);
+	
+	private static final String	BEAN_NAME_MERGE_SORT	= "mergeSort";
+	
+	private static final String	BEAN_NAME_QUICK_SORT	= "quickSort";
+	
+	private static final String	BEAN_NAME_HEAP_SORT		= "heapSort";
+	
+	private static final int	INPUT_ARRAY_SIZE		= 10000;
+	
+	private ISort				sortBean;
+	
+	private ApplicationContext	springContext			= null;
+	
+	boolean						isConnected				= false;
+	
+	Map<String, Long>			counter					= new HashMap<String, Long>(10);
+	
+	Timer						timer;
+	JButton						stopButton;
+	JButton						startButton;
+	ButtonGroup					buttonGroup;
+	JRadioButton				heapsButton;
+	JRadioButton				quickButton;
+	JRadioButton				mergeButton;
+	
 	public YacaAgentTestClient() {
 	}
-
+	
 	public static void main(final String[] args) throws IOException {
 		LOGGER.info("(c) 2012-2016 by Markus Sprunck, v1.1");
-
+		
 		final YacaAgentTestClient yacaAgentTest = new YacaAgentTestClient();
 		yacaAgentTest.run();
 	}
-
+	
 	private int[] createSortInput() {
 		final int[] result = new int[INPUT_ARRAY_SIZE];
 		for (int i = 0; i < INPUT_ARRAY_SIZE; i++) {
@@ -104,46 +102,53 @@ public class YacaAgentTestClient {
 		}
 		return result;
 	}
-
+	
 	private void run() throws IOException {
-
+		
 		// show process id in the title bar
 		final String id = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
 		final JFrame frame = new JFrame("PID = " + id + " YacaAgentTest");
-
+		
 		buildContent(frame);
 		frame.setMinimumSize(new Dimension(300, 180));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
 		frame.setLocation(400, 400);
 		frame.setVisible(true);
-
+		
 		// working is started with this timer
-		timer = new Timer(1, new TimerActionListener());
+		timer = new Timer(500, new TimerActionListener());
+		
+		if (springContext == null) {
+			springContext = new FileSystemXmlApplicationContext("classpath*:com/sw_engineering_candies/yaca/*config.xml");
+			sortBean = (ISort) springContext.getBean(BEAN_NAME_HEAP_SORT);
+		}
+		timer.start();
+		isConnected = true;
 		updateButtons();
 	}
-
+	
 	private void buildContent(final JFrame aFrame) {
 		final Box panelRadioButtons = Box.createVerticalBox();
-
+		
 		final JPanel panelAll = new JPanel(new BorderLayout());
 		buttonGroup = new ButtonGroup();
-
-		heapButton = new JRadioButton("Heap Sort", true);
-		heapButton.setActionCommand(BEAN_NAME_HEAP_SORT);
+		
+		heapsButton = new JRadioButton("Heap Sort", true);
+		heapsButton.setActionCommand(BEAN_NAME_HEAP_SORT);
 		counter.put("HeapSort", 0L);
 		final UIActionListener uiActionListener = new UIActionListener();
-		heapButton.addActionListener(uiActionListener);
-		buttonGroup.add(heapButton);
-		panelRadioButtons.add(heapButton);
-
+		heapsButton.addActionListener(uiActionListener);
+		buttonGroup.add(heapsButton);
+		panelRadioButtons.add(heapsButton);
+		
 		quickButton = new JRadioButton("Quick Sort");
 		quickButton.setActionCommand(BEAN_NAME_QUICK_SORT);
 		counter.put("QuickSort", 0L);
 		quickButton.addActionListener(uiActionListener);
 		buttonGroup.add(quickButton);
 		panelRadioButtons.add(quickButton);
-
+		
 		mergeButton = new JRadioButton("Merge Sort");
 		mergeButton.setActionCommand(BEAN_NAME_MERGE_SORT);
 		counter.put("MergeSort", 0L);
@@ -151,34 +156,34 @@ public class YacaAgentTestClient {
 		buttonGroup.add(mergeButton);
 		panelRadioButtons.add(mergeButton);
 		panelAll.add(panelRadioButtons, BorderLayout.CENTER);
-
+		
 		final JPanel panelButtons = new JPanel(new FlowLayout());
 		startButton = new JButton("Start");
 		startButton.addActionListener(uiActionListener);
 		panelButtons.add(startButton);
-
+		
 		stopButton = new JButton("Stop");
 		stopButton.addActionListener(uiActionListener);
 		stopButton.setEnabled(false);
 		panelButtons.add(stopButton);
 		panelAll.add(panelButtons, BorderLayout.SOUTH);
-
+		
 		aFrame.getContentPane().add(panelAll);
-
+		
 	}
-
+	
 	private void updateButtons() {
 		stopButton.setEnabled(isConnected);
 		startButton.setEnabled(!isConnected);
 	}
-
+	
 	private final class TimerActionListener implements ActionListener {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			callSortBean();
 		}
 	}
-
+	
 	private void callSortBean() {
 		final int[] sortInput = createSortInput();
 		if (null != springContext && null != sortBean) {
@@ -186,7 +191,7 @@ public class YacaAgentTestClient {
 			incrementCounter();
 		}
 	}
-
+	
 	private void incrementCounter() {
 		final String className = sortBean.getClass().getSimpleName();
 		if (counter.containsKey(className)) {
@@ -194,22 +199,16 @@ public class YacaAgentTestClient {
 		}
 		updateLabels();
 	}
-
+	
 	private void updateLabels() {
-		heapButton.setText("Heap Sort =" + counter.get("HeapSort"));
+		heapsButton.setText("Heap Sort  =" + counter.get("HeapSort"));
 		quickButton.setText("Quick Sort =" + counter.get("QuickSort"));
 		mergeButton.setText("Merge Sort =" + counter.get("MergeSort"));
 	}
-
+	
 	private final class UIActionListener implements ActionListener {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			if (springContext == null) {
-				springContext = new FileSystemXmlApplicationContext(
-						"classpath*:com/sw_engineering_candies/yaca/*config.xml");
-				sortBean = (ISort) springContext.getBean(BEAN_NAME_HEAP_SORT);
-			}
-
 			if ("javax.swing.JRadioButton".equals(e.getSource().getClass().getName())) {
 				sortBean = (ISort) springContext.getBean(e.getActionCommand());
 			}
@@ -225,5 +224,5 @@ public class YacaAgentTestClient {
 			}
 		}
 	}
-
+	
 }

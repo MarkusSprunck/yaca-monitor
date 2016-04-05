@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, Markus Sprunck <markus.sprunck@mnet-online.de>
+ * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -28,6 +28,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.sw_engineering_candies.yaca;
 
 public interface ISort {
