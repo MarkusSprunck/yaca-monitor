@@ -25,9 +25,12 @@ public class RequestData {
 			for (byte b : data) {
 				buffer.append((char) b);
 			}
-			firstLine = buffer.toString().substring(0, buffer.toString().indexOf("\r\n"));
-			body = buffer.toString().substring(buffer.toString().lastIndexOf("\r\n") + 2, length);
 			
+			String requestString = buffer.toString();
+			if (!requestString.isEmpty()) {
+				firstLine = requestString.substring(0, requestString.indexOf("\r\n"));
+				body = requestString.substring(requestString.lastIndexOf("\r\n") + 2, length);
+			}
 		} catch (IOException ex) {
 			LOGGER.error(ex);
 		}

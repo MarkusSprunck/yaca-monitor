@@ -56,7 +56,7 @@ public class WebServer extends Thread {
 	
 	private static final String	NL				= System.getProperty("line.separator");
 	
-	List<String>				STATIC_JS_FILES	= Arrays.asList("dat.gui.min.js", //
+	private final List<String>	STATIC_JS_FILES	= Arrays.asList("dat.gui.min.js", //
 														"detector.js", //
 														"three.js", //
 														"trackballcontrols.js", //
@@ -68,14 +68,11 @@ public class WebServer extends Thread {
 														"geometryutils.js", //
 														"detector.js");
 	
-	ClassLoader					classLoader		= Thread.currentThread().getContextClassLoader();
-	
-	/**
-	 * Port for this HTTP server
-	 */
-	private final int			port;
+	private ClassLoader			classLoader		= null;
 	
 	private Model				model			= null;
+	
+	private final int			port;
 	
 	public WebServer(final int port, Model model) {
 		this.port = port;
@@ -94,6 +91,7 @@ public class WebServer extends Thread {
 			server = new ServerSocket(this.port);
 		} catch (IOException ex) {
 			LOGGER.error(ex);
+			stopServer();
 		}
 		
 		while (isRunning && server != null) {
@@ -136,7 +134,7 @@ public class WebServer extends Thread {
 				} else if (request.startsWith("GET /monitor")) {
 					sendResponsForStaticFile(out, request.getFirstLine(), "index.html", "text/html");
 				} else {
-					LOGGER.warn(request.toString());
+					LOGGER.warn("Not expected request=" + request.toString());
 				}
 				
 				in.close();
@@ -144,7 +142,7 @@ public class WebServer extends Thread {
 				socket.close();
 				
 			} catch (final Exception e) {
-				e.printStackTrace();
+				LOGGER.warn("Could not handle request", e);
 			}
 		}
 		
@@ -154,9 +152,13 @@ public class WebServer extends Thread {
 			}
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage());
-			LOGGER.info("server stopped");
-			System.exit(0);
+			stopServer();
 		}
+	}
+
+	private void stopServer() {
+		LOGGER.info("server stopped");
+		System.exit(0);
 	}
 	
 	private void sendResponsForAllStaticJavaScriptFiles(final OutputStream out, String request) throws Exception {
