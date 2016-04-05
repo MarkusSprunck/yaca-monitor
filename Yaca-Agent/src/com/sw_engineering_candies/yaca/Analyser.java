@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -35,12 +35,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Pattern;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -206,7 +205,8 @@ public class Analyser {
 				}
 			}
 		}
-		
+		Collections.sort(allVirtualMachines);
+		Collections.reverse(allVirtualMachines);
 		return allVirtualMachines;
 	}
 	
