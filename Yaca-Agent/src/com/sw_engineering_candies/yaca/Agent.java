@@ -59,6 +59,7 @@ public class Agent {
 		}
 		LOGGER.info("start server at http://" + hostname + ':' + port + "/monitor ");
 		final Thread serverThread = new WebServer(port, model);
+		serverThread.setPriority(Thread.MAX_PRIORITY);
 		serverThread.start();
 	}
 	

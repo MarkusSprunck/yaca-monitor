@@ -85,7 +85,6 @@ public class WebServer extends Thread {
 	
 	@Override
 	public void run() {
-		boolean isRunning = true;
 		ServerSocket server = null;
 		try {
 			server = new ServerSocket(this.port);
@@ -94,7 +93,7 @@ public class WebServer extends Thread {
 			stopServer();
 		}
 		
-		while (isRunning && server != null) {
+		while (server != null) {
 			
 			try {
 				// get connection
@@ -113,49 +112,50 @@ public class WebServer extends Thread {
 					sendResponsForAllStaticJavaScriptFiles(out, request.getFirstLine());
 				} else if (request.startsWith("DELETE /tasks")) {
 					model.reset();
+					sendResponse(out, "OK");
 				} else if (request.startsWith("DELETE /filterWhite")) {
 					model.setFilterWhiteList("");
 					model.reset();
+					sendResponse(out, "OK");
 				} else if (request.startsWith("DELETE /filterBlack")) {
 					model.setFilterBlackList("");
 					model.reset();
+					sendResponse(out, "OK");
 				} else if (request.startsWith("PUT /filterWhite")) {
 					model.setFilterWhiteList(request.getBody());
 					model.reset();
+					sendResponse(out, "OK");
 				} else if (request.startsWith("PUT /filterBlack")) {
 					model.setFilterBlackList(request.getBody());
 					model.reset();
+					sendResponse(out, "OK");
 				} else if (request.startsWith("GET /process/ids")) {
 					sendResponseForVMRequest(out);
 				} else if (request.startsWith("PUT /process/id")) {
 					Analyser.setProcessNewID(request.getBody());
+					sendResponse(out, "OK");
 				} else if (request.startsWith("GET /process")) {
 					sendResponseForModelRequest(out);
 				} else if (request.startsWith("GET /monitor")) {
 					sendResponsForStaticFile(out, request.getFirstLine(), "index.html", "text/html");
 				} else {
-					LOGGER.warn("Not expected request=" + request.toString());
+					LOGGER.warn("Not expected request=" + request.getFirstLine());
 				}
 				
-				in.close();
-				out.close();
-				socket.close();
+				try {
+					in.close();
+					out.close();
+					socket.close();
+				} catch (final IOException e) {
+					LOGGER.warn("Could not close resources : " + e);
+				}
 				
 			} catch (final Exception e) {
-				LOGGER.warn("Could not handle request", e);
+				LOGGER.warn("Could not handle request: " + e);
 			}
-		}
-		
-		try {
-			if (null != server) {
-				server.close();
-			}
-		} catch (IOException e) {
-			LOGGER.error(e.getMessage());
-			stopServer();
 		}
 	}
-
+	
 	private void stopServer() {
 		LOGGER.info("server stopped");
 		System.exit(0);
@@ -225,6 +225,16 @@ public class WebServer extends Thread {
 		out.write(bytesBody);
 		out.flush();
 		LOGGER.debug("sent resonse for request=" + request);
+	}
+	
+	private void sendResponse(final OutputStream out, String body) throws IOException {
+		final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL + "Content-Type: application/json" + NL
+				+ "Content-Length: " + body.getBytes("UTF-8").length + NL + NL;
+		
+		out.write(headerString.getBytes("UTF-8"));
+		out.write(body.toString().getBytes("UTF-8"));
+		out.flush();
+		
 	}
 	
 }

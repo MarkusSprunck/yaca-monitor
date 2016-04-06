@@ -182,6 +182,7 @@ public class Model {
 		message.append(" clusters=").append(clusterIds.size());
 		message.append(" nodes=").append(nodeIds.size());
 		message.append(" links=").append(links.size());
+		message.append(" maxValueNodeCount=").append(maxValueNodeCount);
 		LOGGER.info(message);
 		
 		resetCouters();

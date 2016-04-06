@@ -1,66 +1,67 @@
 <!doctype html>
 <html>
 
-<!--                                                                               -->
-<!-- Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>            -->
-<!--                                                                               -->
-<!-- All rights reserved.                                                          -->
-<!--                                                                               -->
-<!-- Redistribution and use in source and binary forms, with or without            -->
-<!-- modification, are permitted provided that the following conditions are met:   -->
-<!--                                                                               -->
-<!-- - Redistributions of source code must retain the above copyright notice, this -->
-<!--   list of conditions and the following disclaimer.                            -->
-<!--                                                                               -->
-<!--  - Redistributions in binary form must reproduce the above copyright notice,  -->
-<!--  this list of conditions and the following disclaimer in the documentation    -->
-<!--  and/or other materials provided with the distribution.                       -->
-<!--                                                                               -->
-<!--  - The name of its contributor may be used to endorse or promote products     -->
-<!--  derived from this software without specific prior written permission.        -->
-<!--                                                                               -->
-<!--  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  -->
-<!--  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    -->
-<!--  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE   -->
-<!--  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE     -->
-<!--  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR          -->
-<!--  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF         -->
-<!--  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS     -->
-<!--  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN      -->
-<!--  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)      -->
-<!--  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE   -->
-<!--  POSSIBILITY OF SUCH DAMAGE.                                                  -->
-<!--                                                                               -->
-	
-	<head>
-		<title>Yaca-Monitor 4.0</title>
-		
-		<!-- links -->
-		<link type="image/x-icon" rel="icon" href="favicon.ico" />
-		<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
-		
-		<!-- libraries from DAT.GUI -->
-		<script type="text/javascript" src="monitor/external/traceur.js"></script>
-		<script type="text/javascript" src="monitor/external/dat.gui.min.js"></script>
-		
-		<!-- libraries from THREE.js -->
-		<script type="text/javascript" src="monitor/external/three.js"></script>
-		<script type="text/javascript" src="monitor/external/detector.js"></script>
-		<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
-		<script type="text/javascript" src="monitor/external/trackballcontrols.js"></script>
-		<script type="text/javascript" src="monitor/external/projector.js"></script>
-		<script type="text/javascript" src="monitor/external/stats.min.js"></script>
-		
-		<!-- start libraries from traceur.js -->
-		<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
-		
-	</head>
-	
-	<body class="main">
-		
-		<!-- This code uses Traceur a compiler that takes ECMAScript Edition 6 
+<!--                                                                               
+ Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>            
+                                                                               
+ All rights reserved.                                                          
+                                                                               
+ Redistribution and use in source and binary forms, with or without            
+ modification, are permitted provided that the following conditions are met:   
+                                                                               
+ - Redistributions of source code must retain the above copyright notice, this 
+   list of conditions and the following disclaimer.                            
+                                                                               
+  - Redistributions in binary form must reproduce the above copyright notice,  
+  this list of conditions and the following disclaimer in the documentation    
+  and/or other materials provided with the distribution.                       
+                                                                               
+  - The name of its contributor may be used to endorse or promote products     
+  derived from this software without specific prior written permission.        
+                                                                               
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE   
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE     
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR          
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF         
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS     
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN      
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)      
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE   
+  POSSIBILITY OF SUCH DAMAGE.                                                  
+                                                                               -->
+
+<head>
+<title>Yaca-Monitor 4.0</title>
+
+<!-- links -->
+<link type="image/x-icon" rel="icon" href="favicon.ico" />
+<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
+
+<!-- libraries from DAT.GUI -->
+<script type="text/javascript" src="monitor/external/traceur.js"></script>
+<script type="text/javascript" src="monitor/external/dat.gui.min.js"></script>
+
+<!-- libraries from THREE.js -->
+<script type="text/javascript" src="monitor/external/three.js"></script>
+<script type="text/javascript" src="monitor/external/detector.js"></script>
+<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
+<script type="text/javascript"
+	src="monitor/external/trackballcontrols.js"></script>
+<script type="text/javascript" src="monitor/external/projector.js"></script>
+<script type="text/javascript" src="monitor/external/stats.min.js"></script>
+
+<!-- start libraries from traceur.js -->
+<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
+
+</head>
+
+<body class="main">
+
+	<!-- This code uses Traceur a compiler that takes ECMAScript Edition 6 
 			 and compiles it down to regular Javascript that runs in your browser. -->
-		<script type="module">
+	<script type="module">
 
 ///////////////////////////////////////////////////////////////////////////
 // class SimulationOptions
@@ -73,7 +74,7 @@ class SimulationOptions {
 		// General Options
 		this.RUN_IMPORT = true;
 		this.RUN_IMPORT_INTERVAL = 2000;
-		this.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST = 'com.sw_engineering_candies';
+		this.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST = '';
 		this.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST = '';
 		this.ACTIVE_PID = "----";
 		
@@ -86,7 +87,7 @@ class SimulationOptions {
 		this.RENDER_INACTIVE = false;
 		
 		// Extended Options
-		this.MODEL_VIEW_FILTER = 'yaca';
+		this.MODEL_VIEW_FILTER = '';
 		this.MODEL_VIEW_FILTER_INVERT = false;
 		
 		// Extended Options
@@ -1080,7 +1081,7 @@ class YacaMonitor {
 				} else {
 					that.http.callPUT(that.url + "/filterWhite", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST);
 				}
-				if (0 === YACA_Options.RUN_IMPORT_ANALYSIS_FILTERBLACK_LIST.length) {
+				if (0 === YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST.length) {
 					that.http.callDELETE(that.url + "/filterBlack");
 				} else {
 					that.http.callPUT(that.url + "/filterBlack", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST);
@@ -1393,7 +1394,7 @@ var executeTimerRunNBodySimulation = function() {
 	var start = new Date().getTime();
 	YACA_NBodySimulator.applyFilter();
 	if (YACA_Options.RUN_SIMULATION) {
-		for (var count = 0; count < 100 && (new Date().getTime() - start < 10); count++) {
+		for (var count = 0; count < 20 && (new Date().getTime() - start < 10); count++) {
 			YACA_NBodySimulator.simulateAllForces();
 			iterations += 1;
 		}
@@ -1412,8 +1413,8 @@ var modelTimer;
 var yacaMonitor = new YacaMonitor();
 if (yacaMonitor.init()) {
 	yacaMonitor.http.callGET(yacaMonitor.url + "/process/ids", vmCallback);
-	yacaMonitor.http.callPUT(yacaMonitor.url + "/filterWhite", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST);
-	yacaMonitor.http.callPUT(yacaMonitor.url + "/filterBlack", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST);
+//	yacaMonitor.http.callPUT(yacaMonitor.url + "/filterWhite", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST);
+//	yacaMonitor.http.callPUT(yacaMonitor.url + "/filterBlack", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST);
 	
 	initFileDragAndDrop();
 	setInterval(executeTimerRunNBodySimulation, 150);
@@ -1428,21 +1429,21 @@ if (yacaMonitor.init()) {
 }
 
 		</script>
-		
-		<!-- Content area supports drop of model files -->
-		<div id="graphic-container" class="filedrag"
-			style="display: inline-flex">
-			<input id="fileselect" type="file" hidden="true" name="fileselect[]"
-				multiple="multiple" />
-		</div>
-		
-		<!-- Link supports drag of model files ->
+
+	<!-- Content area supports drop of model files -->
+	<div id="graphic-container" class="filedrag"
+		style="display: inline-flex">
+		<input id="fileselect" type="file" hidden="true" name="fileselect[]"
+			multiple="multiple" />
+	</div>
+
+	<!-- Link supports drag of model files ->
 		<a id='downloadId' hidden="true" draggable="true"></a>
 		
 		<!-- Status line for simulator-->
-		<div id="statusLine1" class="statusLine"></div>
-		
-		<!-- GitHub banner ->
+	<div id="statusLine1" class="statusLine"></div>
+
+	<!-- GitHub banner -->
 		<span id="forkongithub"><a href="https://github.com/MarkusSprunck/yaca-monitor">Fork me onGitHub</a></span>
 		
 	</body>

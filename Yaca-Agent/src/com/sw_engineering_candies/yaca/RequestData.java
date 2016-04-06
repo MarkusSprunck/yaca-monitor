@@ -31,8 +31,8 @@ public class RequestData {
 				firstLine = requestString.substring(0, requestString.indexOf("\r\n"));
 				body = requestString.substring(requestString.lastIndexOf("\r\n") + 2, length);
 			}
-		} catch (IOException ex) {
-			LOGGER.error(ex);
+		} catch (Exception ex) {
+			LOGGER.warn("Can't parse Header ", ex);
 		}
 	}
 	

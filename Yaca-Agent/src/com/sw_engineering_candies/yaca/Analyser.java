@@ -59,7 +59,7 @@ public class Analyser {
 	 */
 	private static final Log				LOGGER				= LogFactory.getLog(Analyser.class);
 	private static final String				NL					= System.getProperty("line.separator");
-	public static final String				INVALID_PROCESS_ID	= "----";
+	private static final String				INVALID_PROCESS_ID	= "----";
 	private static String					currentProcessID	= INVALID_PROCESS_ID;
 	private static String					newProcessID		= "";
 	private static boolean					isConnected			= false;
@@ -152,11 +152,9 @@ public class Analyser {
 					LOGGER.error("AttachNotSupportedException " + e.getMessage());
 				}
 				model.reset();
-				// isConnected = false;
 			} catch (IOException e) {
 				LOGGER.error("IOException " + e.getMessage());
 				model.reset();
-				// isConnected = false;
 			}
 		} while (true);
 	}
