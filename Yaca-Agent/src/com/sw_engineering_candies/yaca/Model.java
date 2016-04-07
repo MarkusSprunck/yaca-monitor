@@ -151,7 +151,7 @@ public class Model {
         linkIds.clear();
         links.clear();
         nodesCount.clear();
-        LOGGER.info("reset counters and clear model");
+        LOGGER.info("Reset counters and clear model");
     }
     
     public synchronized String getJSONPModel() {
@@ -209,7 +209,7 @@ public class Model {
         
         final StringBuffer fw = new StringBuffer(1000);
         fw.append("{" + NL);
-        List<Integer> processIDs = Analyser.allVirtualMachines;
+        List<Integer> processIDs = Analyzer.allVirtualMachines;
         fw.append("\"process_id_available\":[");
         fw.append(NL);
         boolean isFrist = true;
@@ -235,12 +235,13 @@ public class Model {
     
     private void add(final Node targetEntry, final Node sourceEntry, final boolean countNodes, final boolean countLinks) {
         
-        // add target cluster
+        // Add target cluster
         final String targetClusterKey = getClusterKey(targetEntry);
         if (!clusterIds.contains(targetClusterKey)) {
             clusterIds.add(targetClusterKey);
         }
-        // add target cluster node
+        
+        // Add target cluster node
         if (!nodeIds.contains(targetClusterKey)) {
             nodeIds.add(targetClusterKey);
             String nodeString = "\t{\"id\":" + nodeIds.indexOf(targetClusterKey) + ", \"clusterId\":" + clusterIds.indexOf(targetClusterKey)
@@ -250,12 +251,13 @@ public class Model {
             incrementNodeCount(targetClusterKey);
         }
         
-        // add source cluster
+        // Add source cluster
         final String sourceClusterKey = getClusterKey(sourceEntry);
         if (!clusterIds.contains(sourceClusterKey)) {
             clusterIds.add(sourceClusterKey);
         }
-        // add source cluster node
+        
+        // Add source cluster node
         if (!nodeIds.contains(sourceClusterKey)) {
             nodeIds.add(sourceClusterKey);
             String nodeString = "\t{\"id\":" + nodeIds.indexOf(sourceClusterKey) + ", \"clusterId\":" + clusterIds.indexOf(sourceClusterKey)
@@ -265,7 +267,7 @@ public class Model {
             incrementNodeCount(sourceClusterKey);
         }
         
-        // add target node
+        // Add target node
         final String targetKey = getNodeKey(targetEntry);
         if (!nodeIds.contains(targetKey)) {
             nodeIds.add(targetKey);
@@ -276,7 +278,7 @@ public class Model {
         nodes.put(targetKey, nodeString);
         incrementNodeCount(targetKey);
         
-        // add source node
+        // Add source node
         final String sourceKey = getNodeKey(sourceEntry);
         if (!nodeIds.contains(sourceKey)) {
             nodeIds.add(sourceKey);
@@ -287,7 +289,7 @@ public class Model {
         nodes.put(sourceKey, nodeString);
         incrementNodeCount(sourceKey);
         
-        // add node link
+        // Add node link
         final String keyLink = targetKey + "<-" + sourceKey;
         if (!linkIds.contains(keyLink)) {
             linkIds.add(keyLink);
@@ -296,7 +298,7 @@ public class Model {
                 + nodeIds.indexOf(targetKey) + ", \"isClusterLink\" : false }";
         links.put(keyLink, nodeString);
         
-        // add cluster link
+        // Add cluster link
         final String keyLink11 = targetClusterKey + "<-" + targetKey;
         if (!linkIds.contains(keyLink11)) {
             linkIds.add(keyLink11);
@@ -335,7 +337,7 @@ public class Model {
     }
     
     public synchronized void setFilterBlackList(String filterBlackList) {
-        LOGGER.info("filterBlackList=" + filterBlackList);
+        LOGGER.info("Set filterBlackList=" + filterBlackList);
         this.filterBlackList = filterBlackList;
     }
     
@@ -344,7 +346,7 @@ public class Model {
     }
     
     public synchronized void setFilterWhiteList(String filterWhiteList) {
-        LOGGER.info("filterWhiteList=" + filterWhiteList);
+        LOGGER.info("Set filterWhiteList=" + filterWhiteList);
         this.filterWhiteList = filterWhiteList;
     }
     

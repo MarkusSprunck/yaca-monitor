@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -34,7 +34,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
@@ -44,7 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * The class is a minimal web server to provide data to a external client
+ * The class is a minimal web server to provide data to a external HTML client
  */
 public class WebServer extends Thread {
     
@@ -67,12 +66,18 @@ public class WebServer extends Thread {
             "geometryutils.js", //
             "detector.js");
     
+    /**
+     * Attributes
+     */
     private ClassLoader classLoader = null;
     
     private Model model = null;
     
     private final int port;
     
+    /**
+     * Constructor
+     */
     public WebServer(final int port, Model model) {
         this.port = port;
         this.model = model;
@@ -85,69 +90,74 @@ public class WebServer extends Thread {
     @Override
     public void run() {
         
-        ServerSocket server = null;
+        // Create server socket
+        ServerSocket serverSocket = null;
         try {
-            server = new ServerSocket(this.port);
+            serverSocket = new ServerSocket(this.port);
         } catch (IOException ex) {
             LOGGER.error(ex);
             stopServer();
         }
         
+        // In the case that after 10 seconds there is no update the server should stop
         long lastUpdate = System.currentTimeMillis();
-        
-        while (server != null && lastUpdate + 10_1000 > System.currentTimeMillis()) {
+        while (serverSocket != null && lastUpdate + 10_0000 > System.currentTimeMillis()) {
             
             try {
-                // get connection
-                final Socket socket = server.accept();
+                // Get connection
+                final Socket socket = serverSocket.accept();
                 socket.setSoTimeout(2000);
+                
+                // Get I/O streams
                 final OutputStream out = socket.getOutputStream();
                 final InputStream in = socket.getInputStream();
                 
+                // Update just in the case the analyzer is connected
                 if (model.isConnected()) {
                     lastUpdate = System.currentTimeMillis();
                 }
                 
-                // handle request
+                // Handle request
                 RequestData request = new RequestData(in);
-                if (request.startsWith("GET /favicon.ico")) {
-                    sendResponsForStaticFile(out, request.getFirstLine(), "favicon.ico", "image/x-icon");
-                } else if (request.startsWith("GET /monitor/styles/main.css")) {
-                    sendResponsForStaticFile(out, request.getFirstLine(), "styles/main.css", "text/css");
-                } else if (request.startsWith("GET /monitor/external")) {
-                    sendResponsForAllStaticJavaScriptFiles(out, request.getFirstLine());
-                } else if (request.startsWith("DELETE /tasks")) {
+                if (request.isStartingWith("GET /favicon.ico")) {
+                    sendResponseForStaticFile(out, request.getFirstLine(), "favicon.ico", "image/x-icon");
+                } else if (request.isStartingWith("GET /monitor/styles/main.css")) {
+                    sendResponseForStaticFile(out, request.getFirstLine(), "styles/main.css", "text/css");
+                } else if (request.isStartingWith("GET /monitor/external")) {
+                    sendResponseForAllStaticJavaScriptFiles(out, request.getFirstLine());
+                } else if (request.isStartingWith("DELETE /tasks")) {
                     model.reset();
-                    sendResponse(out, "OK");
-                } else if (request.startsWith("DELETE /filterWhite")) {
+                    sendResponseForString(out, "OK");
+                } else if (request.isStartingWith("DELETE /filterWhite")) {
                     model.setFilterWhiteList("");
                     model.reset();
-                    sendResponse(out, "OK");
-                } else if (request.startsWith("DELETE /filterBlack")) {
+                    sendResponseForString(out, "OK");
+                } else if (request.isStartingWith("DELETE /filterBlack")) {
                     model.setFilterBlackList("");
                     model.reset();
-                    sendResponse(out, "OK");
-                } else if (request.startsWith("PUT /filterWhite")) {
+                    sendResponseForString(out, "OK");
+                } else if (request.isStartingWith("PUT /filterWhite")) {
                     model.setFilterWhiteList(request.getBody());
                     model.reset();
-                    sendResponse(out, "OK");
-                } else if (request.startsWith("PUT /filterBlack")) {
+                    sendResponseForString(out, "OK");
+                } else if (request.isStartingWith("PUT /filterBlack")) {
                     model.setFilterBlackList(request.getBody());
                     model.reset();
-                    sendResponse(out, "OK");
-                } else if (request.startsWith("GET /process/ids")) {
-                    sendResponseForVMRequest(out);
-                } else if (request.startsWith("PUT /process/id")) {
-                    Analyser.setProcessNewID(request.getBody());
-                    sendResponse(out, "OK");
-                } else if (request.startsWith("GET /process")) {
+                    sendResponseForString(out, "OK");
+                } else if (request.isStartingWith("GET /process/ids")) {
+                    sendResponseForProcessIdRequest(out);
+                } else if (request.isStartingWith("PUT /process/id")) {
+                    Analyzer.setProcessNewID(request.getBody());
+                    sendResponseForString(out, "OK");
+                } else if (request.isStartingWith("GET /process")) {
                     sendResponseForModelRequest(out);
-                } else if (request.startsWith("GET /monitor")) {
-                    sendResponsForStaticFile(out, request.getFirstLine(), "index.html", "text/html");
+                } else if (request.isStartingWith("GET /monitor")) {
+                    sendResponseForStaticFile(out, request.getFirstLine(), "index.html", "text/html");
                 } else {
                     LOGGER.warn("Not expected request=" + request.getFirstLine());
                 }
                 
+                // Close all resources
                 try {
                     in.close();
                     out.close();
@@ -165,19 +175,19 @@ public class WebServer extends Thread {
     }
     
     private void stopServer() {
-        LOGGER.info("server stopped");
+        LOGGER.info("Server stopped");
         System.exit(0);
     }
     
-    private void sendResponsForAllStaticJavaScriptFiles(final OutputStream out, String request) throws Exception {
+    private void sendResponseForAllStaticJavaScriptFiles(final OutputStream out, String request) throws Exception {
         for (String name : STATIC_JS_FILES) {
             if (request.contains(name)) {
-                sendResponsForStaticFile(out, request, "external/" + name, "application/javascript");
+                sendResponseForStaticFile(out, request, "external/" + name, "application/javascript");
             }
         }
     }
     
-    private void sendResponseForModelRequest(final OutputStream out) throws UnsupportedEncodingException, IOException {
+    private void sendResponseForModelRequest(final OutputStream out) throws Exception {
         
         // Create content of response
         final String jsonpModel = model.getJSONPModel();
@@ -188,16 +198,19 @@ public class WebServer extends Thread {
                 + "Content-Type: application/json" + NL // 
                 + "Content-Length: " + jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
         
+        // Write response
         out.write(headerString.getBytes("UTF-8"));
         out.write(jsonpModel.toString().getBytes("UTF-8"));
         out.flush();
     }
     
-    private void sendResponseForVMRequest(final OutputStream out) throws UnsupportedEncodingException, IOException, InterruptedException {
+    private void sendResponseForProcessIdRequest(final OutputStream out) throws Exception {
         
-        Analyser.findOtherAttachableJavaVMs();
-        LOGGER.info("VirtualMachines=" + Analyser.allVirtualMachines);
+        // Find all process IDs
+        Analyzer.findOtherAttachableJavaVMs();
+        LOGGER.info("VirtualMachines=" + Analyzer.allVirtualMachines);
         
+        // Give analyzer some time to collect data
         Thread.sleep(10);
         
         // Create content of response
@@ -209,15 +222,16 @@ public class WebServer extends Thread {
                 + "Content-Type: application/json" + NL //
                 + "Content-Length: " + jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
         
+        // Write response
         out.write(headerString.getBytes("UTF-8"));
         out.write(jsonpModel.toString().getBytes("UTF-8"));
         out.flush();
     }
     
-    private void sendResponsForStaticFile(final OutputStream out, String request, String fileNamePath, String mimeType) throws Exception {
+    private void sendResponseForStaticFile(final OutputStream out, String request, String name, String mimeType) throws Exception {
         
         // Create content of requested file
-        InputStream fileContent = getClass().getResourceAsStream("/" + fileNamePath);
+        InputStream fileContent = getClass().getResourceAsStream("/" + name);
         byte[] bytesBody = readStream(fileContent);
         
         // For HTTP/1.0 or later send a MIME header
@@ -227,13 +241,15 @@ public class WebServer extends Thread {
                 + "Content-Length: " + bytesBody.length + NL + NL;
         byte[] bytesHeader = headerString.getBytes();
         
+        // Write response
         out.write(bytesHeader);
         out.write(bytesBody);
         out.flush();
-        LOGGER.info("sent " + bytesBody.length + " bytes as resonse for request=" + request);
+        
+        LOGGER.info("Rent " + bytesBody.length + " bytes as resonse for request=" + request);
     }
     
-    private void sendResponse(final OutputStream out, String body) throws IOException {
+    private void sendResponseForString(final OutputStream out, String body) throws IOException {
         
         // For HTTP/1.0 or later send a MIME header
         final String headerString = "HTTP/1.1 200 OK" + NL //
@@ -241,12 +257,13 @@ public class WebServer extends Thread {
                 + "Content-Type: application/json" + NL //
                 + "Content-Length: " + body.getBytes("UTF-8").length + NL + NL;
         
+        // Write response
         out.write(headerString.getBytes("UTF-8"));
         out.write(body.toString().getBytes("UTF-8"));
         out.flush();
     }
     
-    public static byte[] readStream(InputStream ins) {
+    private static byte[] readStream(InputStream ins) {
         byte[] result = new byte[0];
         try {
             byte[] buffer = new byte[4096];

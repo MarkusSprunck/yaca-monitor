@@ -53,21 +53,32 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * The class collects call stack data from the VM
  */
-public class Analyser {
+public class Analyzer {
     
     /**
      * Constants
      */
-    private static final Log LOGGER = LogFactory.getLog(Analyser.class);
+    private static final Log LOGGER = LogFactory.getLog(Analyzer.class);
+    
     private static final String NL = System.getProperty("line.separator");
+    
     private static final String INVALID_PROCESS_ID = "----";
     
+    /**
+     * Attributes
+     */
     private static String currentProcessID = INVALID_PROCESS_ID;
-    private static String newProcessID = "";
-    static CopyOnWriteArrayList<Integer> allVirtualMachines = new CopyOnWriteArrayList<Integer>();
-    public Model model = null;
     
-    public Analyser(Model model) {
+    private static String newProcessID = "";
+    
+    protected static CopyOnWriteArrayList<Integer> allVirtualMachines = new CopyOnWriteArrayList<Integer>();
+    
+    protected Model model = null;
+    
+    /**
+     * Constructor
+     */
+    public Analyzer(Model model) {
         this.model = model;
     }
     
@@ -79,8 +90,10 @@ public class Analyser {
             try {
                 
                 if (allVirtualMachines.size() == 0) {
+                    
                     findOtherAttachableJavaVMs();
                     LOGGER.debug("VirtualMachines=" + allVirtualMachines);
+                    
                     if (!allVirtualMachines.isEmpty()) {
                         newProcessID = allVirtualMachines.get(0).toString();
                         LOGGER.debug("Select pid=" + currentProcessID);
@@ -89,8 +102,9 @@ public class Analyser {
                 }
                 
                 if (!currentProcessID.equals(newProcessID)) {
-                    LOGGER.info("request change from pid=" + currentProcessID + " to pid=" + newProcessID + " allVirtualMachines="
-                            + allVirtualMachines);
+                    LOGGER.info("Request change to pid=" + newProcessID + " allVirtualMachines=" + allVirtualMachines);
+                    
+                    // Attach to new virtual machine
                     hsVm = (HotSpotVirtualMachine) VirtualMachine.attach(newProcessID);
                     model.setActiveProcess(newProcessID);
                     model.reset();
@@ -123,12 +137,14 @@ public class Analyser {
                                         packageName.append('.').append(split[i]);
                                     }
                                     
-                                    String packageString = packageName.toString();
-                                    final boolean isWhiteListOk = filterWhite.isEmpty() || fullMethodName.startsWith(filterWhite);
+                                    final boolean isWhiteListOk = filterWhite.isEmpty() || fullMethodName.contains(filterWhite);
                                     if (isWhiteListOk) {
-                                        final boolean isBlackListOk = filterBlack.isEmpty() || !fullMethodName.startsWith(filterBlack);
+                                        
+                                        final boolean isBlackListOk = filterBlack.isEmpty() || !fullMethodName.contains(filterBlack);
                                         if (isBlackListOk) {
+                                            
                                             String className = split[indexOfClassName];
+                                            String packageString = packageName.toString();
                                             final Node entry = new Node();
                                             entry.setMethodName(split[indexOfMethodName]);
                                             entry.setClassName(className);
@@ -139,7 +155,7 @@ public class Analyser {
                                     }
                                     
                                 } else {
-                                    LOGGER.warn("can't process line '" + line + "'");
+                                    LOGGER.warn("Can't process line '" + line + "'");
                                 }
                             }
                         }
@@ -157,12 +173,12 @@ public class Analyser {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    LOGGER.error("Wait problem ",  e);
+                    LOGGER.error("Wait problem ", e);
                 }
                 
             } catch (final AttachNotSupportedException e) {
                 if (model.isConnected()) {
-                    LOGGER.error("AttachNotSupportedException ",  e);
+                    LOGGER.error("AttachNotSupportedException ", e);
                 }
                 model.reset();
             } catch (IOException e) {
@@ -186,7 +202,7 @@ public class Analyser {
             if (!ownPID.equals(nextPID)) {
                 
                 final StringBuilder message = new StringBuilder();
-                message.append("   pid=").append(nextPID).append(NL);
+                message.append("Process ID=").append(nextPID).append(NL);
                 
                 VirtualMachine vm;
                 try {
@@ -204,7 +220,7 @@ public class Analyser {
                         Object elementKey = keys.nextElement();
                         message.append("   ").append(elementKey).append("=").append(properties.getProperty(elementKey.toString())).append(NL);
                     }
-                    LOGGER.debug(message);
+                    LOGGER.info(message);
                     vm.detach();
                     
                     int processId = Integer.parseInt(nextPID);
@@ -225,10 +241,10 @@ public class Analyser {
         String value = processIdNew.trim();
         try {
             Integer.valueOf(value);
-            LOGGER.info("set new process id=" + value);
-            Analyser.newProcessID = value;
+            LOGGER.info("Set new process id=" + value);
+            Analyzer.newProcessID = value;
         } catch (Exception ex) {
-            LOGGER.error("invalid id=" + value);
+            LOGGER.error("Invalid id=" + value);
         }
     }
 }

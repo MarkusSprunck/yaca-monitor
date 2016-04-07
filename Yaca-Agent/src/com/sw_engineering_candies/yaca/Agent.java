@@ -45,7 +45,7 @@ public class Agent {
     
     public final Model model = new Model();
     
-    public Analyser analyser = new Analyser(model);
+    public Analyzer analyzer = new Analyzer(model);
     
     private static int port = 33333;
     
@@ -57,14 +57,14 @@ public class Agent {
         } catch (UnknownHostException e) {
             LOGGER.error(e.getMessage());
         }
-        LOGGER.info("start server at http://" + hostname + ':' + port + "/monitor ");
+        LOGGER.info("Start server at http://" + hostname + ':' + port + "/monitor ");
         final Thread serverThread = new WebServer(port, model);
         serverThread.setPriority(Thread.MAX_PRIORITY);
         serverThread.start();
     }
     
-    private void startAnalyser() {
-        analyser.start();
+    private void startAnalyzer() {
+        analyzer.start();
     }
     
     public static void main(final String[] args) {
@@ -72,7 +72,7 @@ public class Agent {
         
         Agent agent = new Agent();
         agent.startHTTPServerThread();
-        agent.startAnalyser();
+        agent.startAnalyzer();
     }
     
 }

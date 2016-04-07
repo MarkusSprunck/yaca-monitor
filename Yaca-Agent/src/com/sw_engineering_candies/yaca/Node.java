@@ -2,6 +2,9 @@ package com.sw_engineering_candies.yaca;
 
 public class Node {
     
+    /**
+     * Attributes
+     */
     private String packageName;
     
     private String className;
@@ -10,6 +13,9 @@ public class Node {
     
     private boolean newItem;
     
+    /**
+     * Methods
+     */
     public boolean isNewItem() {
         return newItem;
     }
@@ -30,32 +36,21 @@ public class Node {
         return methodName;
     }
     
+    public void setMethodName(final String methodName) {
+        this.methodName = methodName;
+    }
+    
+    public void setClassName(final String className) {
+        this.className = className;
+    }
+    
+    public void setPackageName(final String packageName) {
+        this.packageName = packageName;
+    }
+    
     @Override
     public String toString() {
         return "Entry [" + packageName + ", " + className + ", " + methodName + "]";
     }
     
-    public void setMethodName(final String methodName) {
-        // Assertions - start
-        assert methodName != null : "Null is not allowed";
-        assert !methodName.isEmpty() : "Empty is not allowed";
-        // Assertions - end
-        this.methodName = methodName;
-    }
-    
-    public void setClassName(final String className) {
-        // Assertions - start
-        assert className != null : "Null is not allowed";
-        assert !className.isEmpty() : "Empty is not allowed";
-        // Assertions - end
-        this.className = className;
-    }
-    
-    public void setPackageName(final String packageName) {
-        // Assertions - start
-        assert packageName != null : "Null is not allowed";
-        assert !packageName.isEmpty() : "Empty is not allowed";
-        // Assertions - end
-        this.packageName = packageName;
-    }
 }

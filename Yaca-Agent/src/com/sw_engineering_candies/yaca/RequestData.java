@@ -8,12 +8,21 @@ import org.apache.commons.logging.LogFactory;
 
 public class RequestData {
     
+    /**
+     * Constants
+     */
     private static final Log LOGGER = LogFactory.getLog(RequestData.class);
+    
+    /**
+     * Attributes
+     */
+    private String firstLine = "";
     
     private String body = "";
     
-    private String firstLine = "";
-    
+    /**
+     * Constructor
+     */
     public RequestData(InputStream in) {
         
         try {
@@ -46,7 +55,7 @@ public class RequestData {
         return firstLine;
     }
     
-    public boolean startsWith(String string) {
+    public boolean isStartingWith(String string) {
         return getFirstLine().startsWith(string);
     }
     
