@@ -30,10 +30,9 @@
  */
 package com.sw_engineering_candies.yaca;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
@@ -158,7 +157,7 @@ public class WebServer extends Thread {
                 }
                 
             } catch (final Exception e) {
-                LOGGER.warn("Could not handle request: " + e);
+                LOGGER.warn("Could not handle request: ", e);
             }
         }
         
@@ -212,38 +211,55 @@ public class WebServer extends Thread {
     }
     
     private void sendResponsForStaticFile(final OutputStream out, String request, String fileNamePath, String mimeType) throws Exception {
+        
         // Create content of requested file
         InputStream fileContent = getClass().getResourceAsStream("/" + fileNamePath);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(fileContent));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line + "\r\n");
-        }
-        fileContent.close();
-        byte[] bytesBody = sb.toString().substring(0, sb.toString().length() - 2).getBytes("UTF-8");
+        byte[] bytesBody = readStream(fileContent);
         
         // For HTTP/1.0 or later send a MIME header
         final String headerString = "HTTP/1.1 200 OK" + NL //
                 + "Server: YacaAgent 2.0" + NL //
-                + "Content-Type: " + mimeType + NL//
+                + "Content-Type: " + mimeType + NL //
                 + "Content-Length: " + bytesBody.length + NL + NL;
-        byte[] bytesHeader = headerString.getBytes("UTF-8");
+        byte[] bytesHeader = headerString.getBytes();
         
         out.write(bytesHeader);
         out.write(bytesBody);
         out.flush();
-        LOGGER.debug("sent resonse for request=" + request);
+        LOGGER.info("sent " + bytesBody.length + " bytes as resonse for request=" + request);
     }
     
     private void sendResponse(final OutputStream out, String body) throws IOException {
-        final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL + "Content-Type: application/json" + NL
+        
+        // For HTTP/1.0 or later send a MIME header
+        final String headerString = "HTTP/1.1 200 OK" + NL //
+                + "Server: YacaAgent 2.0" + NL //
+                + "Content-Type: application/json" + NL //
                 + "Content-Length: " + body.getBytes("UTF-8").length + NL + NL;
         
         out.write(headerString.getBytes("UTF-8"));
         out.write(body.toString().getBytes("UTF-8"));
         out.flush();
-        
+    }
+    
+    public static byte[] readStream(InputStream ins) {
+        byte[] result = new byte[0];
+        try {
+            byte[] buffer = new byte[4096];
+            ByteArrayOutputStream outs = new ByteArrayOutputStream();
+            
+            int read = 0;
+            while ((read = ins.read(buffer)) != -1) {
+                outs.write(buffer, 0, read);
+            }
+            
+            ins.close();
+            outs.close();
+            result = outs.toByteArray();
+        } catch (Exception e) {
+            LOGGER.error("Can't read bytes from stream", e);
+        }
+        return result;
     }
     
 }

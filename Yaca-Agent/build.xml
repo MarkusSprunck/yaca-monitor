@@ -4,7 +4,7 @@
 	<!-- Update these pathes -->
 	<property name="JDK.HOME.OSX" value="/Library/Java/JavaVirtualMachines/jdk1.8.0_77.jdk/Contents/Home" />
 	<property name="JDK.HOME.WIN" value="C:/Program Files/Java/jdk1.8.0_77" />
-	
+
 	<!-- Print parameter -->
 	<echo message="Current settings of JDK path for OS X    = ${JDK.HOME.OSX}" />
 	<echo message="Current settings of JDK path for windows = ${JDK.HOME.WIN}" />
