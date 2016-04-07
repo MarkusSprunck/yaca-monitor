@@ -83,7 +83,7 @@ class SimulationOptions {
 		this.FILTER_ALL_CALL_DEEP_CALLER = 0;
 		
 		// Filter Activity
-		this.RENDER_THRESHOLD = 40.0;
+		this.RENDER_THRESHOLD = 60.0;
 		this.RENDER_INACTIVE = false;
 		
 		// Extended Options
@@ -811,7 +811,7 @@ class YacaMonitor {
 		this.renderer = new THREE.WebGLRenderer({
 			antialias: true
 		});
-		this.renderer.setClearColor(0x333333, 1);
+		this.renderer.setClearColor(0x555555, 1);
 		
 		// Container for WebGL rendering
 		this.container = $id('graphic-container');
@@ -834,11 +834,12 @@ class YacaMonitor {
 		this.scene.add(this.light);
 		
 		// Create light near the center
-		var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+		var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.7);
 		hemiLight.groundColor.setHSL(0.095, 1, 0.75);
 		hemiLight.position.set(0, 200, 0);
 		this.scene.add(hemiLight);
 		this.scene.fog = new THREE.FogExp2(0xffffff, 0.00005);
+
 		resizeCallback();
 		window.addEventListener('resize', resizeCallback, false);
 		this.control = new THREE.TrackballControls(this.camera, this.renderer.domElement);
@@ -1121,7 +1122,7 @@ class YacaMonitor {
 				}
 				that.currentBlackListFilter = value;
 			});
-		this.gui_folder1.open();
+		// this.gui_folder1.open();
 		
 		folder02.add(guiEvents, 'resetRenderingEvent').listen().name("Reset Position");
 		folder02.add(YACA_Options, 'FILTER_ALL_CALL_DEEP_CALLED', 0, 20).listen().name('Add Called Nodes').step(1);
