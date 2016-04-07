@@ -180,10 +180,12 @@ public class WebServer extends Thread {
     private void sendResponseForModelRequest(final OutputStream out) throws UnsupportedEncodingException, IOException {
         
         // Create content of response
-        final String jsonpModel = model.getJSONPModel().toString();
+        final String jsonpModel = model.getJSONPModel();
         
         // For HTTP/1.0 or later send a MIME header
-        final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL + "Content-Type: application/json" + NL
+        final String headerString = "HTTP/1.1 200 OK" + NL //
+                + "Server: YacaAgent 2.0" + NL //
+                + "Content-Type: application/json" + NL // 
                 + "Content-Length: " + jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
         
         out.write(headerString.getBytes("UTF-8"));
@@ -196,13 +198,15 @@ public class WebServer extends Thread {
         Analyser.findOtherAttachableJavaVMs();
         LOGGER.info("VirtualMachines=" + Analyser.allVirtualMachines);
         
-        Thread.sleep(100);
+        Thread.sleep(10);
         
         // Create content of response
-        final String jsonpModel = model.getJSONPVM().toString();
+        final String jsonpModel = model.getJSONPVM();
         
         // For HTTP/1.0 or later send a MIME header
-        final String headerString = "HTTP/1.1 200 OK" + NL + "Server: YacaAgent 2.0" + NL + "Content-Type: application/json" + NL
+        final String headerString = "HTTP/1.1 200 OK" + NL //
+                + "Server: YacaAgent 2.0" + NL //
+                + "Content-Type: application/json" + NL //
                 + "Content-Length: " + jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
         
         out.write(headerString.getBytes("UTF-8"));

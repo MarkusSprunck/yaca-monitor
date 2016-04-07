@@ -154,7 +154,7 @@ public class Model {
         LOGGER.info("reset counters and clear model");
     }
     
-    public synchronized StringBuffer getJSONPModel() {
+    public synchronized String getJSONPModel() {
         
         final StringBuffer fw = new StringBuffer(lastLength + 1000);
         
@@ -171,7 +171,8 @@ public class Model {
             if (nodes.containsKey(key)) {
                 fw.append((isFrist ? "" : "," + NL) + "");
                 isFrist = false;
-                fw.append(String.format(Locale.ENGLISH, nodes.get(key), nodesCount.get(key)));
+                long nodeActivity = (long) ((double) nodesCount.get(key) * 1000.0f) / maxValueNodeCount;
+                fw.append(String.format(Locale.ENGLISH, nodes.get(key), nodeActivity));
             }
         }
         fw.append(NL + "],");
@@ -201,10 +202,10 @@ public class Model {
         
         resetCouters();
         lastLength = fw.length();
-        return fw;
+        return fw.toString();
     }
     
-    public synchronized StringBuffer getJSONPVM() {
+    public synchronized String getJSONPVM() {
         
         final StringBuffer fw = new StringBuffer(1000);
         fw.append("{" + NL);
@@ -229,7 +230,7 @@ public class Model {
         message.append(" processIDs=").append(processIDs.toString());
         LOGGER.info(message);
         
-        return fw;
+        return fw.toString();
     }
     
     private void add(final Node targetEntry, final Node sourceEntry, final boolean countNodes, final boolean countLinks) {

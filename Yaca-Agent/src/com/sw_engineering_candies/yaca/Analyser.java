@@ -77,6 +77,7 @@ public class Analyser {
         do {
             
             try {
+                
                 if (allVirtualMachines.size() == 0) {
                     findOtherAttachableJavaVMs();
                     LOGGER.debug("VirtualMachines=" + allVirtualMachines);
@@ -153,9 +154,15 @@ public class Analyser {
                     }
                 }
                 
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    LOGGER.error("Wait problem ",  e);
+                }
+                
             } catch (final AttachNotSupportedException e) {
                 if (model.isConnected()) {
-                    LOGGER.error("AttachNotSupportedException " + e.getMessage());
+                    LOGGER.error("AttachNotSupportedException ",  e);
                 }
                 model.reset();
             } catch (IOException e) {
