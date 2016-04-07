@@ -83,8 +83,8 @@ public class Analyser {
                     if (!allVirtualMachines.isEmpty()) {
                         newProcessID = allVirtualMachines.get(0).toString();
                         LOGGER.debug("Select pid=" + currentProcessID);
+                        model.setConnected(true);
                     }
-                    model.setConnected(true);
                 }
                 
                 if (!currentProcessID.equals(newProcessID)) {
