@@ -220,7 +220,7 @@ public class Analyzer {
                         Object elementKey = keys.nextElement();
                         message.append("   ").append(elementKey).append("=").append(properties.getProperty(elementKey.toString())).append(NL);
                     }
-                    LOGGER.info(message);
+                    LOGGER.debug(message);
                     vm.detach();
                     
                     int processId = Integer.parseInt(nextPID);

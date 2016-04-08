@@ -99,9 +99,7 @@ public class WebServer extends Thread {
             stopServer();
         }
         
-        // In the case that after 10 seconds there is no update the server should stop
-        long lastUpdate = System.currentTimeMillis();
-        while (serverSocket != null && lastUpdate + 10_0000 > System.currentTimeMillis()) {
+        while (serverSocket != null) {
             
             try {
                 // Get connection
@@ -112,11 +110,6 @@ public class WebServer extends Thread {
                 final OutputStream out = socket.getOutputStream();
                 final InputStream in = socket.getInputStream();
                 
-                // Update just in the case the analyzer is connected
-                if (model.isConnected()) {
-                    lastUpdate = System.currentTimeMillis();
-                }
-                
                 // Handle request
                 RequestData request = new RequestData(in);
                 if (request.isStartingWith("GET /favicon.ico")) {
@@ -125,6 +118,8 @@ public class WebServer extends Thread {
                     sendResponseForStaticFile(out, request.getFirstLine(), "styles/main.css", "text/css");
                 } else if (request.isStartingWith("GET /monitor/external")) {
                     sendResponseForAllStaticJavaScriptFiles(out, request.getFirstLine());
+                } else if (request.isStartingWith("DELETE /analyzer")) {
+                    stopServer();
                 } else if (request.isStartingWith("DELETE /tasks")) {
                     model.reset();
                     sendResponseForString(out, "OK");

@@ -1092,7 +1092,7 @@ class YacaMonitor {
 			}	
 		});
 		this.gui_folder1.add(guiEvents, 'resetModelEvent').listen().name("Reset Model");
-		this.gui_folder1.add(guiEvents, 'downloadModelEvent').listen().name("Download Model");
+    	this.gui_folder1.add(guiEvents, 'downloadModelEvent').listen().name("Download Model");
 		this.gui_folder1.add(YACA_Options, 'RUN_IMPORT_INTERVAL', 500, 5000).step(500).listen().name("Intervall").onChange(
 			function(value) {
 				clearInterval(modelTimer);
@@ -1124,6 +1124,8 @@ class YacaMonitor {
 				}
 				that.currentBlackListFilter = value;
 			});
+		this.gui_folder1.add(guiEvents, 'stopAnalyserEvent').listen().name("Stop Analyser");
+	
 		// this.gui_folder1.open();
 		
 		folder02.add(guiEvents, 'resetRenderingEvent').listen().name("Reset Position");
@@ -1151,14 +1153,6 @@ class YacaMonitor {
 	}
 }
 
-
-window.onbeforeunload = function(e) {
-	if (isRunning) {
-		// TODO: here the server should be terminated
-		// yacaMonitor.http.callDELETE(yacaMonitor.url + "/terminate");
-		isRunning = false;
-	}
-};
 
 /**
  * Selection handler
@@ -1218,7 +1212,7 @@ var animate = function() {
 	yacaMonitor.control.update();
 	rendererEventHandler();
 	requestAnimationFrame(animate);
-	yacaMonitor.stats.update();
+	// yacaMonitor.stats.update();
 };
 
 /**
@@ -1323,7 +1317,14 @@ var guiEvents = {
 		yacaMonitor.http.callPUT(yacaMonitor.url + "/filterWhite", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST);
 		yacaMonitor.http.callPUT(yacaMonitor.url + "/filterBlack", YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST);
 		yacaMonitor.http.callDELETE(yacaMonitor.url + "/tasks");
+	},
+	stopAnalyserEvent: function() {
+  		if (confirm("Do you realy like to terminate the Yaca-Agent process?") == true) {
+			yacaMonitor.http.callDELETE(yacaMonitor.url + "/analyzer");
+			YACA_Options.RUN_IMPORT = false;
+    	}
 	}
+
 };
 
 var changeModelViewFilter = function() {
@@ -1438,14 +1439,16 @@ if (yacaMonitor.init()) {
 			multiple="multiple" />
 	</div>
 
-	<!-- Link supports drag of model files ->
-		<a id='downloadId' hidden="true" draggable="true"></a>
+	<!-- Link supports drag of model files -->
+	<a id='downloadId' hidden="true" draggable="true"></a>
 		
 		<!-- Status line for simulator-->
 	<div id="statusLine1" class="statusLine"></div>
 
 	<!-- GitHub banner -->
-		<span id="forkongithub"><a href="https://github.com/MarkusSprunck/yaca-monitor">Fork me onGitHub</a></span>
-		
-	</body>
+	<span id="forkongithub"><a
+		href="https://github.com/MarkusSprunck/yaca-monitor">Fork me
+			onGitHub</a></span>
+
+</body>
 </html>
