@@ -127,21 +127,17 @@ public class CallStackAnalyzer {
                             if (line.startsWith("\tat ") && line.length() > 10) {
                                 LOGGER.debug(line);
                                 final String fullMethodName = line.substring(4, line.lastIndexOf('(')).trim();
-                                final String[] split = fullMethodName.split("\\.");
-                                if (split.length > 2) {
-                                    final int indexOfMethodName = split.length - 1;
-                                    final int indexOfClassName = indexOfMethodName - 1;
-                                    final StringBuffer packageName = new StringBuffer(line.length());
-                                    packageName.append(split[0]);
-                                    for (int i = 1; i < indexOfClassName; i++) {
-                                        packageName.append('.').append(split[i]);
-                                    }
-                                    
-                                    final boolean isWhiteListOk = filterWhite.isEmpty() || fullMethodName.contains(filterWhite);
-                                    if (isWhiteListOk) {
-                                        
-                                        final boolean isBlackListOk = filterBlack.isEmpty() || !fullMethodName.contains(filterBlack);
-                                        if (isBlackListOk) {
+                                if (filterWhite.isEmpty() || fullMethodName.contains(filterWhite)) {
+                                    if (filterBlack.isEmpty() || !fullMethodName.contains(filterBlack)) {
+                                        final String[] split = fullMethodName.split("\\.");
+                                        if (split.length > 2) {
+                                            final int indexOfMethodName = split.length - 1;
+                                            final int indexOfClassName = indexOfMethodName - 1;
+                                            final StringBuffer packageName = new StringBuffer(line.length());
+                                            packageName.append(split[0]);
+                                            for (int i = 1; i < indexOfClassName; i++) {
+                                                packageName.append('.').append(split[i]);
+                                            }
                                             
                                             String className = split[indexOfClassName];
                                             String packageString = packageName.toString();
@@ -151,11 +147,10 @@ public class CallStackAnalyzer {
                                             entry.setPackageName(packageString);
                                             entry.setNewItem(true);
                                             entryList.add(entry);
+                                        } else {
+                                            LOGGER.warn("Can't process line '" + line + "'");
                                         }
                                     }
-                                    
-                                } else {
-                                    LOGGER.warn("Can't process line '" + line + "'");
                                 }
                             }
                         }

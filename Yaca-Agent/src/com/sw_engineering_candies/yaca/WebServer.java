@@ -121,12 +121,12 @@ public class WebServer extends Thread {
                 } else if (request.isStartingWith("GET /monitor/external")) {
                     sendResponseForAllStaticJavaScriptFiles(out, request.getFirstLine());
                 } else if (request.isStartingWith("GET /analyzer/options")) {
-                    LOGGER.info("GET options=" + options);
+                    LOGGER.debug("GET options=" + options);
                     sendResponseForString(out, options);
                 } else if (request.isStartingWith("PUT /analyzer/options")) {
                     options = request.getBody();
                     sendResponseForString(out, "OK");
-                    LOGGER.info("PUT options=" + options);
+                    LOGGER.debug("PUT options=" + options);
                 } else if (request.isStartingWith("DELETE /analyzer")) {
                     sendResponseForString(out, "OK");
                     stopServer();
@@ -251,7 +251,7 @@ public class WebServer extends Thread {
         out.write(bytesBody);
         out.flush();
         
-        LOGGER.info("Rent " + bytesBody.length + " bytes as resonse for request=" + request);
+        LOGGER.info("Return " + bytesBody.length + " bytes as resonse for request=" + request);
     }
     
     private void sendResponseForString(final OutputStream out, String body) throws IOException {

@@ -91,7 +91,7 @@ public class Model {
      * Used to find the maximal count of a node, to scale all nodes to a
      * reasonable range
      */
-    private long maxValueNodeCount = 1L;
+    private long maximumNodeCount = 1L;
     
     /**
      * Allocate right size for StringBuffer
@@ -171,7 +171,7 @@ public class Model {
             if (nodes.containsKey(key)) {
                 fw.append((isFrist ? "" : "," + NL) + "");
                 isFrist = false;
-                long nodeActivity = (long) ((double) nodesCount.get(key) * 1000.0f) / maxValueNodeCount;
+                long nodeActivity = (long) ((double) nodesCount.get(key) * 1000.0f) / maximumNodeCount;
                 fw.append(String.format(Locale.ENGLISH, nodes.get(key), nodeActivity));
             }
         }
@@ -192,11 +192,11 @@ public class Model {
         fw.append(NL);
         
         final StringBuffer message = new StringBuffer(200);
-        message.append("pid=").append(activeProcess);
+        message.append("Process ID=").append(activeProcess);
         message.append(" clusters=").append(clusterIds.size());
         message.append(" nodes=").append(nodeIds.size());
         message.append(" links=").append(links.size());
-        message.append(" maxValueNodeCount=").append(maxValueNodeCount);
+        message.append(" maximumNodeCount=").append(maximumNodeCount);
         message.append(" connected=" + isConnected);
         LOGGER.info(message);
         
@@ -226,8 +226,8 @@ public class Model {
         fw.append(NL);
         
         final StringBuffer message = new StringBuffer(200);
-        message.append("pid=").append(activeProcess);
-        message.append(" processIDs=").append(processIDs.toString());
+        message.append("Process ID=").append(activeProcess);
+        message.append(" process IDs=").append(processIDs.toString());
         LOGGER.info(message);
         
         return fw.toString();
@@ -313,7 +313,7 @@ public class Model {
         if (nodesCount.containsKey(keyNode)) {
             value = nodesCount.get(keyNode) + 1L;
         }
-        maxValueNodeCount = Math.max(maxValueNodeCount, value);
+        maximumNodeCount = Math.max(maximumNodeCount, value);
         nodesCount.put(keyNode, value);
     }
     
@@ -321,7 +321,7 @@ public class Model {
         for (final String key : nodesCount.keySet()) {
             nodesCount.put(key, 0L);
         }
-        maxValueNodeCount = 1L;
+        maximumNodeCount = 1L;
     }
     
     private String getNodeKey(Node item) {
