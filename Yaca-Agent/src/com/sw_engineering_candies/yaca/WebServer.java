@@ -54,7 +54,7 @@ public class WebServer extends Thread {
     
     private static final String NL = System.getProperty("line.separator");
     
-    private final List<String> STATIC_JS_FILES = Arrays.asList("dat.gui.min.js", //
+    private final List<String> STATIC_JS_FILES = Arrays.asList("dat.gui.js", //
             "detector.js", //
             "three.js", //
             "trackballcontrols.js", //
