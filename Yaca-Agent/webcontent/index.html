@@ -29,38 +29,39 @@
   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN      
   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)      
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE   
-  POSSIBILITY OF SUCH DAMAGE.                                                  
-                                                                               -->
+  POSSIBILITY OF SUCH DAMAGE.                                                  -->
 
 <head>
-<title>Yaca-Monitor 4.0</title>
 
-<!-- links -->
-<link type="image/x-icon" rel="icon" href="favicon.ico" />
-<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
+	<title>Yaca-Monitor 4.0</title>
 
-<!-- libraries from DAT.GUI -->
-<script type="text/javascript" src="monitor/external/traceur.js"></script>
-<script type="text/javascript" src="monitor/external/dat.gui.js"></script>
+	<!-- links -->
+	<link type="image/x-icon" rel="icon" href="favicon.ico" />
+	<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
 
-<!-- libraries from THREE.js -->
-<script type="text/javascript" src="monitor/external/three.js"></script>
-<script type="text/javascript" src="monitor/external/detector.js"></script>
-<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
-<script type="text/javascript"
-	src="monitor/external/trackballcontrols.js"></script>
-<script type="text/javascript" src="monitor/external/projector.js"></script>
-<script type="text/javascript" src="monitor/external/stats.min.js"></script>
+	<!-- libraries  -->
+	<script type="text/javascript" src="monitor/external/traceur.js"></script>
+	<script type="text/javascript" src="monitor/external/dat.gui.js"></script>
 
-<!-- start libraries from traceur.js -->
-<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
+	<!-- libraries from THREE.js -->
+	<script type="text/javascript" src="monitor/external/three.js"></script>
+	<script type="text/javascript" src="monitor/external/detector.js"></script>
+	<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
+	<script type="text/javascript" src="monitor/external/trackballcontrols.js"></script>
+	<script type="text/javascript" src="monitor/external/projector.js"></script>
+	<script type="text/javascript" src="monitor/external/stats.min.js"></script>
+
+	<!-- start traceur.js -->
+	<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
 
 </head>
 
 <body class="main">
 
-	<!-- This code uses Traceur a compiler that takes ECMAScript Edition 6 
-			 and compiles it down to regular Javascript that runs in your browser. -->
+	<!-- 
+		This code uses Traceur a compiler that takes ECMAScript Edition 6 
+		and compiles it down to regular Javascript that runs in your browser. 
+	-->
 	<script type="module">
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1066,7 +1067,7 @@ class YacaMonitor {
 			msg = msg.concat(' import is not active');
 		}
 		
-		$id('statusLine1').innerHTML = msg;
+		$id('statusLine').innerHTML = msg;
 	}
 	
 	/**
@@ -1430,25 +1431,21 @@ if (yacaMonitor.init()) {
 	isRunning = true;
 }
 
-		</script>
+	</script>
 
 	<!-- Content area supports drop of model files -->
-	<div id="graphic-container" class="filedrag"
-		style="display: inline-flex">
-		<input id="fileselect" type="file" hidden="true" name="fileselect[]"
-			multiple="multiple" />
+	<div id="graphic-container" class="filedrag" style="display: inline-flex">
+		<input id="fileselect" type="file" hidden="true" name="fileselect[]" multiple="multiple" />
 	</div>
 
 	<!-- Link supports drag of model files -->
 	<a id='downloadId' hidden="true" draggable="true"></a>
 		
-		<!-- Status line for simulator-->
-	<div id="statusLine1" class="statusLine"></div>
+	<!-- Status line-->
+	<div id="statusLine" class="statusLine"></div>
 
 	<!-- GitHub banner -->
-	<span id="forkongithub"><a
-		href="https://github.com/MarkusSprunck/yaca-monitor">Fork me
-			onGitHub</a></span>
+	<span id="forkongithub"><a href="https://github.com/MarkusSprunck/yaca-monitor">Fork me onGitHub</a></span>
 
 </body>
 </html>
