@@ -33,26 +33,27 @@
 
 <head>
 
-	<title>Yaca-Monitor 4.0</title>
+<title>Yaca-Monitor 4.0</title>
 
-	<!-- links -->
-	<link type="image/x-icon" rel="icon" href="favicon.ico" />
-	<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
+<!-- links -->
+<link type="image/x-icon" rel="icon" href="favicon.ico" />
+<link type="text/css" rel="stylesheet" href="monitor/styles/main.css" />
 
-	<!-- libraries  -->
-	<script type="text/javascript" src="monitor/external/traceur.js"></script>
-	<script type="text/javascript" src="monitor/external/dat.gui.js"></script>
+<!-- libraries  -->
+<script type="text/javascript" src="monitor/external/traceur.js"></script>
+<script type="text/javascript" src="monitor/external/dat.gui.js"></script>
 
-	<!-- libraries from THREE.js -->
-	<script type="text/javascript" src="monitor/external/three.js"></script>
-	<script type="text/javascript" src="monitor/external/detector.js"></script>
-	<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
-	<script type="text/javascript" src="monitor/external/trackballcontrols.js"></script>
-	<script type="text/javascript" src="monitor/external/projector.js"></script>
-	<script type="text/javascript" src="monitor/external/stats.min.js"></script>
+<!-- libraries from THREE.js -->
+<script type="text/javascript" src="monitor/external/three.js"></script>
+<script type="text/javascript" src="monitor/external/detector.js"></script>
+<script type="text/javascript" src="monitor/external/geometryutils.js"></script>
+<script type="text/javascript"
+	src="monitor/external/trackballcontrols.js"></script>
+<script type="text/javascript" src="monitor/external/projector.js"></script>
+<script type="text/javascript" src="monitor/external/stats.min.js"></script>
 
-	<!-- start traceur.js -->
-	<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
+<!-- start traceur.js -->
+<script type="text/javascript" src="monitor/external/bootstrap.js"></script>
 
 </head>
 
@@ -1074,6 +1075,7 @@ class YacaMonitor {
 	 * User interface to change parameters
 	 */
 	createGui(gui) {
+		
 		this.gui_folder1 = gui.addFolder('Import Options');
 		var folder02 = gui.addFolder('Rendering Options');
 		var folder03 = gui.addFolder('N-Body Simulation');
@@ -1111,7 +1113,7 @@ class YacaMonitor {
 						that.resetAllData();
 					}
 				}
-				that.currentWhiteListFilter = value;
+	    		that.currentWhiteListFilter = value;
 			});
 		this.gui_folder1.add(YACA_Options, 'RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST').listen().name('Filter Black List').onChange(
 			function(value) {
@@ -1361,6 +1363,47 @@ var modelCallback = function(responseText) {
 	YACA_NBodySimulator.updateModel(input_model);
 };
 
+var optionsCallback = function(responseText) {
+	if (responseText != "") {
+		var options = JSON.parse(responseText);
+	
+	    YACA_Options.RUN_IMPORT = options.RUN_IMPORT;
+		YACA_Options.RUN_IMPORT_INTERVAL = options.RUN_IMPORT_INTERVAL;
+		YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST = options.RUN_IMPORT_ANALYSIS_FILTER_WHITE_LIST;
+		YACA_Options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST = options.RUN_IMPORT_ANALYSIS_FILTER_BLACK_LIST;
+		YACA_Options.ACTIVE_PID =YACA_Options.ACTIVE_PID;
+			
+		// Show Nodes by
+		YACA_Options.FILTER_ALL_CALL_DEEP_CALLED = options.FILTER_ALL_CALL_DEEP_CALLED;
+		YACA_Options.FILTER_ALL_CALL_DEEP_CALLER = options.FILTER_ALL_CALL_DEEP_CALLER;
+		
+		// Filter Activity
+		YACA_Options.RENDER_THRESHOLD = options.RENDER_THRESHOLD;
+		YACA_Options.RENDER_INACTIVE = options.RENDER_INACTIVE;
+		
+		// Extended Options
+		YACA_Options.MODEL_VIEW_FILTER = options.MODEL_VIEW_FILTER;
+		YACA_Options.MODEL_VIEW_FILTER_INVERT = options.MODEL_VIEW_FILTER_INVERT;
+		
+		// Extended Options
+		YACA_Options.DISPLAY_DIRECTIONS = options.DISPLAY_DIRECTIONS;
+		YACA_Options.DISPLAY_NAMES = options.DISPLAY_DIRECTIONS;
+		
+		// N-Body Simulation
+		YACA_Options.RUN_SIMULATION = options.RUN_SIMULATION;
+		YACA_Options.DISTANCE = options.DISTANCE;
+		YACA_Options.SPRING = options.SPRING;
+		YACA_Options.CHARGE = options.CHARGE;
+		YACA_Options.GRAVITY = options.GRAVITY;
+		YACA_Options.FORCE_2D = options.FORCE_2D;
+		
+		// Others ...
+		YACA_Options.SPHERE_RADIUS_MINIMUM = options.SPHERE_RADIUS_MINIMUM;
+		YACA_Options.SPHERE_RADIUS = options.SPHERE_RADIUS;
+		YACA_Options.THETA = options.THETA;
+	}
+}
+
 var vmCallback = function(responseText) {
 	var input_vm = JSON.parse(responseText);
 
@@ -1394,6 +1437,20 @@ var executeTimerGetYacaAnalyserModel = function() {
 	}
 };
 
+function sleepFor( sleepDuration ){
+    var now = new Date().getTime();
+    while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+}
+
+window.onbeforeunload = function(e) {
+	if (isRunning) {
+		console.log("Store options = " + JSON.stringify(YACA_Options));
+		yacaMonitor.http.callPUT(yacaMonitor.url + "/analyzer/options", JSON.stringify(YACA_Options));
+		sleepFor(500);
+		isRunning = false;
+	}
+};
+
 var executeTimerRunNBodySimulation = function() {
 	var iterations = 0;
 	var start = new Date().getTime();
@@ -1417,6 +1474,8 @@ var isRunning = false;
 var modelTimer;
 var yacaMonitor = new YacaMonitor();
 if (yacaMonitor.init()) {
+		
+	yacaMonitor.http.callGET(yacaMonitor.url + "/analyzer/options", optionsCallback);
 	yacaMonitor.http.callGET(yacaMonitor.url + "/process/ids", vmCallback);
 	
 	initFileDragAndDrop();
@@ -1428,24 +1487,30 @@ if (yacaMonitor.init()) {
 	// Register mouse event handler
 	yacaMonitor.renderer.domElement.addEventListener('mousemove', mouseMoveEventHandler.bind(yacaMonitor));
 	yacaMonitor.renderer.domElement.addEventListener('mousedown', mouseDownEventHandler.bind(yacaMonitor));
+	
+	
 	isRunning = true;
 }
 
 	</script>
 
 	<!-- Content area supports drop of model files -->
-	<div id="graphic-container" class="filedrag" style="display: inline-flex">
-		<input id="fileselect" type="file" hidden="true" name="fileselect[]" multiple="multiple" />
+	<div id="graphic-container" class="filedrag"
+		style="display: inline-flex">
+		<input id="fileselect" type="file" hidden="true" name="fileselect[]"
+			multiple="multiple" />
 	</div>
 
 	<!-- Link supports drag of model files -->
 	<a id='downloadId' hidden="true" draggable="true"></a>
-		
+
 	<!-- Status line-->
 	<div id="statusLine" class="statusLine"></div>
 
 	<!-- GitHub banner -->
-	<span id="forkongithub"><a href="https://github.com/MarkusSprunck/yaca-monitor">Fork me onGitHub</a></span>
+	<span id="forkongithub"><a
+		href="https://github.com/MarkusSprunck/yaca-monitor">Fork me
+			onGitHub</a></span>
 
 </body>
 </html>

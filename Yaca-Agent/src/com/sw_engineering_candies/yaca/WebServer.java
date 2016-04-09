@@ -75,6 +75,8 @@ public class WebServer extends Thread {
     
     private final int port;
     
+    private String options = "";
+    
     /**
      * Constructor
      */
@@ -118,7 +120,15 @@ public class WebServer extends Thread {
                     sendResponseForStaticFile(out, request.getFirstLine(), "styles/main.css", "text/css");
                 } else if (request.isStartingWith("GET /monitor/external")) {
                     sendResponseForAllStaticJavaScriptFiles(out, request.getFirstLine());
+                } else if (request.isStartingWith("GET /analyzer/options")) {
+                    LOGGER.info("GET options=" + options);
+                    sendResponseForString(out, options);
+                } else if (request.isStartingWith("PUT /analyzer/options")) {
+                    options = request.getBody();
+                    sendResponseForString(out, "OK");
+                    LOGGER.info("PUT options=" + options);
                 } else if (request.isStartingWith("DELETE /analyzer")) {
+                    sendResponseForString(out, "OK");
                     stopServer();
                 } else if (request.isStartingWith("DELETE /tasks")) {
                     model.reset();
