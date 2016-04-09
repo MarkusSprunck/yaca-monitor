@@ -43,36 +43,63 @@ public class Agent {
     
     private static final Log LOGGER = LogFactory.getLog(Agent.class);
     
+    /**
+     * The model holds all data of the call stack analysis
+     */
     public final Model model = new Model();
     
-    public Analyzer analyzer = new Analyzer(model);
+    /**
+     * Run the analysis and stores results into the model
+     */
+    public final CallStackAnalyzer analyzer = new CallStackAnalyzer(model);
     
-    private static int port = 33333;
+    /**
+     * The default port should not be used by any other application. 
+     * 
+     * See <a href="https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers">
+     * https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers </a>
+     * for standard port usage. 
+     */
+    private static int port = 8082;
     
-    private void startHTTPServerThread() {
+    private static void parseComandLine(String[] args) {
+        if (1 == args.length) {
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                LOGGER.warn("The port must be a number.", e);
+            }
+        }
+    }
+    
+    private void outputOfLocalHostName() {
         String hostname = "localhost";
         try {
             InetAddress addr = InetAddress.getLocalHost();
             hostname = addr.getCanonicalHostName();
         } catch (UnknownHostException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Could not resolve local host name into an address ", e);
         }
         LOGGER.info("Start server at http://" + hostname + ':' + port + "/monitor ");
+    }
+    
+    private void startHTTPServerThread() {
         final Thread serverThread = new WebServer(port, model);
-        serverThread.setPriority(Thread.MAX_PRIORITY);
+        serverThread.setPriority(Thread.NORM_PRIORITY);
         serverThread.start();
     }
     
-    private void startAnalyzer() {
-        analyzer.start();
-    }
-    
     public static void main(final String[] args) {
-        LOGGER.info("(c) 2012-2016 by Markus Sprunck, v4.0");
+        LOGGER.info("Yaca-Agent - (c) 2012-2016 by Markus Sprunck, v4.0");
         
+        // Change the default port
+        parseComandLine(args);
+        
+        // Start analyzer
         Agent agent = new Agent();
+        agent.outputOfLocalHostName();
         agent.startHTTPServerThread();
-        agent.startAnalyzer();
+        agent.analyzer.start();
     }
     
 }

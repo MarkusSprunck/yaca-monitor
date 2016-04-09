@@ -209,7 +209,7 @@ public class Model {
         
         final StringBuffer fw = new StringBuffer(1000);
         fw.append("{" + NL);
-        List<Integer> processIDs = Analyzer.allVirtualMachines;
+        List<Integer> processIDs = CallStackAnalyzer.allVirtualMachines;
         fw.append("\"process_id_available\":[");
         fw.append(NL);
         boolean isFrist = true;

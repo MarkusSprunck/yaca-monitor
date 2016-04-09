@@ -142,7 +142,7 @@ public class WebServer extends Thread {
                 } else if (request.isStartingWith("GET /process/ids")) {
                     sendResponseForProcessIdRequest(out);
                 } else if (request.isStartingWith("PUT /process/id")) {
-                    Analyzer.setProcessNewID(request.getBody());
+                    CallStackAnalyzer.setProcessNewID(request.getBody());
                     sendResponseForString(out, "OK");
                 } else if (request.isStartingWith("GET /process")) {
                     sendResponseForModelRequest(out);
@@ -202,8 +202,8 @@ public class WebServer extends Thread {
     private void sendResponseForProcessIdRequest(final OutputStream out) throws Exception {
         
         // Find all process IDs
-        Analyzer.findOtherAttachableJavaVMs();
-        LOGGER.info("VirtualMachines=" + Analyzer.allVirtualMachines);
+        CallStackAnalyzer.findOtherAttachableJavaVMs();
+        LOGGER.info("VirtualMachines=" + CallStackAnalyzer.allVirtualMachines);
         
         // Give analyzer some time to collect data
         Thread.sleep(10);

@@ -53,12 +53,12 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * The class collects call stack data from the VM
  */
-public class Analyzer {
+public class CallStackAnalyzer {
     
     /**
      * Constants
      */
-    private static final Log LOGGER = LogFactory.getLog(Analyzer.class);
+    private static final Log LOGGER = LogFactory.getLog(CallStackAnalyzer.class);
     
     private static final String NL = System.getProperty("line.separator");
     
@@ -78,7 +78,7 @@ public class Analyzer {
     /**
      * Constructor
      */
-    public Analyzer(Model model) {
+    public CallStackAnalyzer(Model model) {
         this.model = model;
     }
     
@@ -242,7 +242,7 @@ public class Analyzer {
         try {
             Integer.valueOf(value);
             LOGGER.info("Set new process id=" + value);
-            Analyzer.newProcessID = value;
+            CallStackAnalyzer.newProcessID = value;
         } catch (Exception ex) {
             LOGGER.error("Invalid id=" + value);
         }
