@@ -27,7 +27,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */package com.sw_engineering_candies.yaca;
+ */
+
+package com.sw_engineering_candies.yaca;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -125,7 +127,6 @@ public class CallStackAnalyzer {
                         String line = "";
                         while ((line = br.readLine()) != null) {
                             if (line.startsWith("\tat ") && line.length() > 10) {
-                                LOGGER.debug(line);
                                 final String fullMethodName = line.substring(4, line.lastIndexOf('(')).trim();
                                 if (filterWhite.isEmpty() || fullMethodName.contains(filterWhite)) {
                                     if (filterBlack.isEmpty() || !fullMethodName.contains(filterBlack)) {
@@ -142,11 +143,17 @@ public class CallStackAnalyzer {
                                             String className = split[indexOfClassName];
                                             String packageString = packageName.toString();
                                             final Node entry = new Node();
-                                            entry.setMethodName(split[indexOfMethodName]);
+                                            String methodName = split[indexOfMethodName];
+                                            entry.setMethodName(methodName);
                                             entry.setClassName(className);
                                             entry.setPackageName(packageString);
                                             entry.setNewItem(true);
                                             entryList.add(entry);
+                                            
+                                            LOGGER.debug("line='" + line + "'" + NL 
+                                                    + "  packageString='" + packageString+ NL 
+                                                    + "  className='" + className+ NL 
+                                                    + "  methodName='" + methodName + "'");
                                         } else {
                                             LOGGER.warn("Can't process line '" + line + "'");
                                         }
