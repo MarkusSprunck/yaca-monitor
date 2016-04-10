@@ -43,6 +43,8 @@ public class Agent {
     
     private static final Log LOGGER = LogFactory.getLog(Agent.class);
     
+    protected static final String VERSION = "4.0";
+    
     /**
      * The model holds all data of the call stack analysis
      */
@@ -90,7 +92,7 @@ public class Agent {
     }
     
     public static void main(final String[] args) {
-        LOGGER.info("Yaca-Agent - (c) 2012-2016 by Markus Sprunck, v4.0");
+        LOGGER.info("Yaca-Agent - (c) 2012-2016 by Markus Sprunck, v" + VERSION);
         
         // Change the default port
         parseComandLine(args);

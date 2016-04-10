@@ -199,7 +199,7 @@ public class WebServer extends Thread {
         
         // For HTTP/1.0 or later send a MIME header
         final String headerString = "HTTP/1.1 200 OK" + NL //
-                + "Server: YacaAgent 2.0" + NL //
+                + "Server: Yaca-Agent "+  Agent.VERSION + NL //
                 + "Content-Type: application/json" + NL // 
                 + "Content-Length: " + jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
         
@@ -223,7 +223,7 @@ public class WebServer extends Thread {
         
         // For HTTP/1.0 or later send a MIME header
         final String headerString = "HTTP/1.1 200 OK" + NL //
-                + "Server: YacaAgent 2.0" + NL //
+                + "Server: Yaca-Agent "+  Agent.VERSION + NL //
                 + "Content-Type: application/json" + NL //
                 + "Content-Length: " + jsonpModel.toString().getBytes("UTF-8").length + NL + NL;
         
@@ -241,7 +241,7 @@ public class WebServer extends Thread {
         
         // For HTTP/1.0 or later send a MIME header
         final String headerString = "HTTP/1.1 200 OK" + NL //
-                + "Server: YacaAgent 2.0" + NL //
+                + "Server: Yaca-Agent "+  Agent.VERSION + NL //
                 + "Content-Type: " + mimeType + NL //
                 + "Content-Length: " + bytesBody.length + NL + NL;
         byte[] bytesHeader = headerString.getBytes();
@@ -258,7 +258,7 @@ public class WebServer extends Thread {
         
         // For HTTP/1.0 or later send a MIME header
         final String headerString = "HTTP/1.1 200 OK" + NL //
-                + "Server: YacaAgent 2.0" + NL //
+                + "Server: Yaca-Agent " + Agent.VERSION + NL //
                 + "Content-Type: application/json" + NL //
                 + "Content-Length: " + body.getBytes("UTF-8").length + NL + NL;
         
