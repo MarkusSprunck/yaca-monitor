@@ -33,6 +33,8 @@
 
 <head>
 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
 <title>Yaca-Monitor 4.0</title>
 
 <!-- links -->
@@ -839,7 +841,7 @@ class YacaMonitor {
 		this.renderer = new THREE.WebGLRenderer({
 			antialias: true
 		});
-		this.renderer.setClearColor(0x555555, 1);
+		this.renderer.setClearColor(0x222222, 1);
 		
 		// Container for WebGL rendering
 		this.container = $id('graphic-container');
@@ -965,6 +967,8 @@ class YacaMonitor {
 			node.sphere.position.z = node.z;
 			node.sphere.position.y = node.y;
 			node.sphere.visible = node.isVisible();
+			var scaleFactor = (node === this.activeNode) ? 1.5 : 1.0
+			node.sphere.scale.set(scaleFactor, scaleFactor, scaleFactor) ;
 			if (node.sphere.visible) {
 				this.objects.push(node.sphere);
 			} else {
@@ -1004,6 +1008,8 @@ class YacaMonitor {
 				node.text.rotation.x = this.camera.rotation._x;
 				node.text.rotation.y = this.camera.rotation._y;
 				node.text.rotation.z = this.camera.rotation._z;
+				var scaleFactor = (node === this.activeNode) ? 1.5 : 1.0
+				node.text.scale.set(scaleFactor, scaleFactor, scaleFactor);
 			}
 		} else if (YACA_Options.DISPLAY_NAMES || node === this.activeNode) {
 			
