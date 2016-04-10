@@ -85,6 +85,7 @@ class SimulationOptions {
 		this.FILTER_ALL_CALL_DEEP_CALLER = 0;
 		
 		// Filter Activity
+		this.RENDER_LIMIT_NODE_NUMBER = 40.0;
 		this.RENDER_THRESHOLD = 60.0;
 		this.RENDER_INACTIVE = false;
 		
@@ -142,6 +143,7 @@ class NNode {
 		this.callerCalleeAnalysisDone = false;
 		this.callerCallerAnalysisDone = false;
 		this.isIndirectVisible = false;
+		this.isHiddenMaxNumber = false;
 	}
 	
 	addCaller(node) {
@@ -191,6 +193,7 @@ class NNode {
 	update(node) {
 		this.callFilter();
 		this.calls = this.isFiltered ? node.calls : 0;
+		// this.isHiddenMaxNumber = false;
 	}
 	
 	callFilter() {
@@ -202,7 +205,7 @@ class NNode {
 	}
 	
 	isVisible() {
-		return this.isIndirectVisible || (this.getActivity() >= YACA_Options.RENDER_THRESHOLD) && this.isFiltered;
+		return !this.isHiddenMaxNumber && (this.isIndirectVisible || (this.getActivity() >= YACA_Options.RENDER_THRESHOLD) && this.isFiltered);
 	}
 	
 	getActivity() {
@@ -537,20 +540,34 @@ class NBodySimulator {
 		this.node_list_visible = [];
 		this.node_list_visible_indirect = [];
 		var nodes = this.node_list;
-		var link;
+
+		// Rest all setting
 		var node;
-		var i;
-		var me = this;
-		for (i = 0; i < nodes.length; i++) {
+		for (var i = 0; i < nodes.length; i++) {
+			nodes[i].isHiddenMaxNumber = false;
 			node = nodes[i];
 			node.isIndirectVisible = false;
+			node.isHiddenMaxNumber = false;
 			node.callerCalleeAnalysisDone = false;
 			node.callerCallerAnalysisDone = false;
+		}
+
+		var link;
+		var me = this;
+		var maxNumber = 0;
+		for (i = 0; i < nodes.length; i++) {
+			node = nodes[i];
 			node.callFilter();
 			if (node.isVisible()) {
-				me.node_list_visible.push(node);
-			}
+				if (maxNumber < YACA_Options.RENDER_LIMIT_NODE_NUMBER) {
+					me.node_list_visible.push(node);
+					maxNumber += 1;
+				} else {
+					node.isHiddenMaxNumber = true;
+				}
+			}	
 		}
+
 		for (i = 0; i < this.node_list.length; i++) {
 			node = this.node_list[i];
 			if (node.isVisible() && !node.isIndirectVisible) {
@@ -565,9 +582,18 @@ class NBodySimulator {
 		for (i = 0; i < this.node_list_visible_indirect.length; i++) {
 			var node = this.node_list_visible_indirect[i];
 			if (this.node_list_visible.indexOf(node) === -1) {
-				this.node_list_visible.push(node);
+				if (node.isVisible()) {
+					if (maxNumber < YACA_Options.RENDER_LIMIT_NODE_NUMBER) {
+						me.node_list_visible.push(node);
+						maxNumber += 1;
+					} else {
+						node.isHiddenMaxNumber = true;
+					}
+				}	
 			}
 		}
+
+		// Select all 
 		this.link_list_visible = [];
 		var links = this.link_list;
 		for (i = 0; i < links.length; i++) {
@@ -867,7 +893,7 @@ class YacaMonitor {
 		this.googleDatGui.domElement.style.top = '10px';
 		
 		// Don't use stats in release version
-		// this.createStats();
+		this.createStats();
 		
 		var _that = this;
 		var loader = new THREE.FontLoader();
@@ -1135,6 +1161,7 @@ class YacaMonitor {
 		folder02.add(YACA_Options, 'FILTER_ALL_CALL_DEEP_CALLED', 0, 20).listen().name('Add Called Nodes').step(1);
 		folder02.add(YACA_Options, 'FILTER_ALL_CALL_DEEP_CALLER', 0, 20).listen().name('Add Caller Nodes').step(1);
 		folder02.add(YACA_Options, 'RENDER_THRESHOLD', 0.0, 100.0).step(1.0).listen().name('Activity Index');
+		folder02.add(YACA_Options, 'RENDER_LIMIT_NODE_NUMBER', 10.0, 100.0).step(10.0).listen().name('Max Nodes');
 		folder02.add(YACA_Options, 'MODEL_VIEW_FILTER').name('Filter Display').listen().onChange(function(value) {
 			if (0 === value.length) {
 				YACA_Options.RENDER_THRESHOLD = 80;
@@ -1145,7 +1172,7 @@ class YacaMonitor {
 			changeModelViewFilter();
 		});
 		folder02.add(YACA_Options, 'MODEL_VIEW_FILTER_INVERT').name('Filter Invert').listen().onChange(invertFilterEventHandler);
-		folder02.add(YACA_Options, 'DISPLAY_NAMES').name('Show Labels');
+		folder02.add(YACA_Options, 'DISPLAY_NAMES').name('Show Labels').listen();
 		folder02.add(YACA_Options, 'FORCE_2D').listen().name('Force 2D');
 		
 		folder03.add(YACA_Options, 'RUN_SIMULATION').listen().name('Run');
@@ -1215,7 +1242,7 @@ var animate = function() {
 	yacaMonitor.control.update();
 	rendererEventHandler();
 	requestAnimationFrame(animate);
-	// yacaMonitor.stats.update();
+	yacaMonitor.stats.update();
 };
 
 /**
@@ -1379,6 +1406,7 @@ var optionsCallback = function(responseText) {
 		
 		// Filter Activity
 		YACA_Options.RENDER_THRESHOLD = options.RENDER_THRESHOLD;
+		YACA_Options.RENDER_LIMIT_NODE_NUMBER = options.RENDER_LIMIT_NODE_NUMBER;
 		YACA_Options.RENDER_INACTIVE = options.RENDER_INACTIVE;
 		
 		// Extended Options
@@ -1461,7 +1489,7 @@ var executeTimerRunNBodySimulation = function() {
 			iterations += 1;
 		}
 	}
-	YACA_Options.DISPLAY_NAMES = YACA_Options.DISPLAY_NAMES && (YACA_NBodySimulator.node_list_visible.length < 100);
+	YACA_Options.DISPLAY_NAMES = YACA_Options.DISPLAY_NAMES && (YACA_NBodySimulator.node_list_visible.length <= 100);
 	yacaMonitor.updateWebGL(YACA_NBodySimulator.node_list_visible_last, YACA_NBodySimulator.link_list_visible_last);
 	yacaMonitor.updateWebGL(YACA_NBodySimulator.node_list_visible, YACA_NBodySimulator.link_list_visible);
 	yacaMonitor.updateStatusLine(iterations);
