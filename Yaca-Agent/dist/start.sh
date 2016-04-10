@@ -8,5 +8,5 @@ $JAVA_RUN_TIME -Xint -jar "$JAR1" &
 $JAVA_RUN_TIME  -jar "$JAR2" & 
 
 sleep 3
-/usr/bin/open -a "/Applications/Google Chrome.app" 'http://localhost:33333/monitor' 
+/usr/bin/open -a "/Applications/Google Chrome.app" 'http://localhost:8082/monitor' 
 
