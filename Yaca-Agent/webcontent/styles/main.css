@@ -40,10 +40,6 @@
 	position: absolute;
 	transition: 0.5s;
 	transform: scale(0.7, 0.7);
-	-webkit-transform: scale(0.7, 0.7);
-	-ms-transform: scale(0.7, 0.7);
-	-moz-transform: scale(0.7, 0.7);
-	-o-transform: scale(0.7, 0.7);
 }
 
 #forkongithub a:hover {
@@ -84,10 +80,6 @@
 		top: 35px;
 		left: -85px;
 		transform: rotate(-45deg) scale(0.7, 0.7);
-		-webkit-transform: rotate(-45deg) scale(0.7, 0.7);
-		-ms-transform: rotate(-45deg) scale(0.7, 0.7);
-		-moz-transform: rotate(-45deg) scale(0.7, 0.7);
-		-o-transform: rotate(-45deg) scale(0.7, 0.7);
 		box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
 	}
 }
