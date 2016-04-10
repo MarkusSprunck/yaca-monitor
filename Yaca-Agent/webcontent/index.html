@@ -125,6 +125,7 @@ class NNode {
 
 	constructor(node) {
 		this.id = node.id;
+		this.isClusterNode = node.isClusterNode;
 		this.name = node.name;
 		this.alias = node.alias;
 		this.calls = node.calls;
@@ -196,7 +197,6 @@ class NNode {
 	update(node) {
 		this.callFilter();
 		this.calls = this.isFiltered ? node.calls : 0;
-		// this.isHiddenMaxNumber = false;
 	}
 	
 	callFilter() {
@@ -208,7 +208,9 @@ class NNode {
 	}
 	
 	isVisible() {
-		return !this.isHiddenMaxNumber && (this.isIndirectVisible || (this.getActivity() >= YACA_Options.RENDER_THRESHOLD) && this.isFiltered);
+		return !this.isClusterNode 
+			&& !this.isHiddenMaxNumber 
+			&& (this.isIndirectVisible || (this.getActivity() >= YACA_Options.RENDER_THRESHOLD) && this.isFiltered);
 	}
 	
 	getActivity() {
