@@ -42,6 +42,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -119,6 +120,8 @@ public class CallStackAnalyzer {
                     // Update filter white list
                     final String filterWhite = model.getFilterWhiteList();
                     final String filterBlack = model.getFilterBlackList();
+                    final Pattern patternWhiteList = Pattern.compile(filterWhite);
+                    final Pattern patternBlackList = Pattern.compile(filterBlack);
                     
                     try {
                         final List<Node> entryList = new ArrayList<Node>(10);
@@ -128,8 +131,8 @@ public class CallStackAnalyzer {
                         while ((line = br.readLine()) != null) {
                             if (line.startsWith("\tat ") && line.length() > 10) {
                                 final String fullMethodName = line.substring(4, line.lastIndexOf('(')).trim();
-                                if (filterWhite.isEmpty() || fullMethodName.contains(filterWhite)) {
-                                    if (filterBlack.isEmpty() || !fullMethodName.contains(filterBlack)) {
+                                if (filterWhite.isEmpty() || patternWhiteList.matcher(fullMethodName).find()) {
+                                    if (filterBlack.isEmpty() || !patternBlackList.matcher(fullMethodName).find()) {
                                         final String[] split = fullMethodName.split("\\.");
                                         if (split.length > 2) {
                                             final int indexOfMethodName = split.length - 1;
@@ -150,10 +153,8 @@ public class CallStackAnalyzer {
                                             entry.setNewItem(true);
                                             entryList.add(entry);
                                             
-                                            LOGGER.debug("line='" + line + "'" + NL 
-                                                    + "  packageString='" + packageString+ NL 
-                                                    + "  className='" + className+ NL 
-                                                    + "  methodName='" + methodName + "'");
+                                            LOGGER.debug("line='" + line + "'" + NL + "  packageString='" + packageString + NL + "  className='"
+                                                    + className + NL + "  methodName='" + methodName + "'");
                                         } else {
                                             LOGGER.warn("Can't process line '" + line + "'");
                                         }

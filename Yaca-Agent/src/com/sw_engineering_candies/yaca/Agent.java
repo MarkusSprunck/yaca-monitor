@@ -44,7 +44,7 @@ public class Agent {
     
     private static final Log LOGGER = LogFactory.getLog(Agent.class);
     
-    protected static final String VERSION = "4.0";
+    protected static final String VERSION = "4.0.1";
     
     /**
      * The model holds all data of the call stack analysis
