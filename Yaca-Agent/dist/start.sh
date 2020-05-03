@@ -1,12 +1,10 @@
 #!/bin/sh
 
-JAVA_RUN_TIME=/Library/Java/JavaVirtualMachines/jdk1.8.0_77.jdk/Contents/Home/bin/java
-JAR1=/Users/markus/git/yaca-monitor/Yaca-Agent/dist/YacaAgentTestClient.jar
-JAR2=/Users/markus/git/yaca-monitor/Yaca-Agent/dist/YacaAgent.jar
+java  -Xint -jar YacaAgentTestClient-jar-with-dependencies.jar  &
 
-$JAVA_RUN_TIME -Xint -jar "$JAR1" &
-$JAVA_RUN_TIME  -jar "$JAR2" & 
+java  -classpath "../lib/tools.jar" -jar YacaAgent-jar-with-dependencies.jar  &
 
 sleep 3
-/usr/bin/open -a "/Applications/Google Chrome.app" 'http://localhost:8082/monitor' 
+
+/usr/bin/open -a "/Applications/Google Chrome.app" 'http://localhost:8082/monitor'
 

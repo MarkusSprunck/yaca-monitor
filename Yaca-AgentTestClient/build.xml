@@ -5,7 +5,7 @@
     <target name="build-jar">
         <jar destfile="../Yaca-Agent/dist/YacaAgentTestClient.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="com.sw_engineering_candies.yaca.YacaAgentTestClient"/>
+                <attribute name="Main-Class" value="com.yaca.sw_engineering_candies.YacaAgentTestClient"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="./bin"/>
