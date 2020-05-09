@@ -61,8 +61,6 @@ public class WebServer extends Thread {
             "projector.js", //
             "helvetiker_regular.typeface.js", //
             "stats.min.js", //
-            "traceur.js", //
-            "bootstrap.js", //
             "geometryutils.js", //
             "detector.js");
 
