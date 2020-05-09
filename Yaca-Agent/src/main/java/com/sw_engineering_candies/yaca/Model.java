@@ -56,35 +56,35 @@ public class Model {
     /**
      * The map stores all created nodes
      */
-    private final Map<String, String> nodes = new HashMap<String, String>(EXPECTED_NUMBER_OF_NODES);
+    private final Map<String, String> nodes = new HashMap<>(EXPECTED_NUMBER_OF_NODES);
 
     /**
      * The list nodeIds is used to find the correct ids for the creation of the
      * JSON file
      */
-    private final List<String> nodeIds = new Vector<String>(EXPECTED_NUMBER_OF_NODES);
+    private final List<String> nodeIds = new Vector<>(EXPECTED_NUMBER_OF_NODES);
 
     /**
      * The list clusterIds is used to find the correct ids for the creation of
      * the JSON file
      */
-    private final List<String> clusterIds = new Vector<String>(EXPECTED_NUMBER_OF_CLUSTERS);
+    private final List<String> clusterIds = new Vector<>(EXPECTED_NUMBER_OF_CLUSTERS);
 
     /**
      * The list clusterIds is used to find the correct ids for the creation of
      * the JSON file
      */
-    private final List<String> linkIds = new Vector<String>(EXPECTED_NUMBER_OF_LINKS);
+    private final List<String> linkIds = new Vector<>(EXPECTED_NUMBER_OF_LINKS);
 
     /**
      * The map links all created links
      */
-    private final Map<String, String> links = new HashMap<String, String>(EXPECTED_NUMBER_OF_LINKS);
+    private final Map<String, String> links = new HashMap<>(EXPECTED_NUMBER_OF_LINKS);
 
     /**
      * The list is used to count the finding of each link
      */
-    private final Map<String, Long> nodesCount = new HashMap<String, Long>(EXPECTED_NUMBER_OF_NODES);
+    private final Map<String, Long> nodesCount = new HashMap<>(EXPECTED_NUMBER_OF_NODES);
 
     /**
      * Used to find the maximal count of a node, to scale all nodes to a
@@ -129,11 +129,11 @@ public class Model {
      * Method updateLinks analyzes the call stack of all threads and collects
      * the data in the class ResultData.
      */
-    public synchronized void append(final List<Node> entryList, final boolean countNodes, final boolean countLinks) {
+    public synchronized void append(final List<Node> entryList) {
         final int maxIndex = entryList.size() - 1;
         if (maxIndex > 0) {
             for (int i = 0; i < maxIndex; i++) {
-                add(entryList.get(i), entryList.get(i + 1), countNodes, countLinks);
+                add(entryList.get(i), entryList.get(i + 1));
             }
         }
     }
@@ -155,26 +155,21 @@ public class Model {
 
     public synchronized String getJSONPModel() {
 
-        final StringBuffer fw = new StringBuffer(lastLength + 1000);
-
-        final List<String> nodeskeys = new Vector<String>();
-        nodeskeys.addAll(nodes.keySet());
-
-        fw.append("{" + NL);
+        final StringBuilder fw = new StringBuilder(lastLength + 1000);
+        fw.append("{").append(NL);
 
         fw.append("\"nodes\":[");
         fw.append(NL);
         boolean isFrist = true;
-        for (int index = 0; index < nodeIds.size(); index++) {
-            final String key = nodeIds.get(index);
+        for (final String key : nodeIds) {
             if (nodes.containsKey(key)) {
-                fw.append((isFrist ? "" : "," + NL) + "");
+                fw.append(isFrist ? "" : "," + NL);
                 isFrist = false;
                 long nodeActivity = (long) ((double) nodesCount.get(key) * 1000.0f) / maximumNodeCount;
                 fw.append(String.format(Locale.ENGLISH, nodes.get(key), nodeActivity));
             }
         }
-        fw.append(NL + "],");
+        fw.append(NL).append("],");
         fw.append(NL);
 
         fw.append("\"links\":[");
@@ -182,22 +177,21 @@ public class Model {
         isFrist = true;
         for (final String key : linkIds) {
             if (links.containsKey(key)) {
-                fw.append((isFrist ? "" : "," + NL) + "");
+                fw.append(isFrist ? "" : "," + NL);
                 isFrist = false;
                 fw.append(links.get(key));
             }
         }
-        fw.append(NL + "]}");
+        fw.append(NL).append("]}");
         fw.append(NL);
 
-        final StringBuffer message = new StringBuffer(200);
-        message.append("Process ID=").append(activeProcess);
-        message.append(" clusters=").append(clusterIds.size());
-        message.append(" nodes=").append(nodeIds.size());
-        message.append(" links=").append(links.size());
-        message.append(" maximumNodeCount=").append(maximumNodeCount);
-        message.append(" connected=" + isConnected);
-        log.info(message.toString());
+        String message = "Process ID=" + activeProcess
+                + " clusters=" + clusterIds.size()
+                + " nodes=" + nodeIds.size()
+                + " links=" + links.size()
+                + " maximumNodeCount=" + maximumNodeCount
+                + " connected=" + isConnected;
+        log.info(message);
 
         resetCouters();
         lastLength = fw.length();
@@ -206,33 +200,32 @@ public class Model {
 
     public synchronized String getJSONPVM() {
 
-        final StringBuffer fw = new StringBuffer(1000);
-        fw.append("{" + NL);
+        final StringBuilder fw = new StringBuilder(1000);
+        fw.append("{").append(NL);
         List<Integer> processIDs = CallStackAnalyzer.allVirtualMachines;
         fw.append("\"process_id_available\":[");
         fw.append(NL);
         boolean isFrist = true;
-        for (int index = 0; index < processIDs.size(); index++) {
-            final String pid = processIDs.get(index).toString();
-            fw.append((isFrist ? "    " : ",") + "");
+        for (Integer processID : processIDs) {
+            final String pid = processID.toString();
+            fw.append(isFrist ? "    " : ",");
             isFrist = false;
             fw.append(pid);
         }
-        fw.append(NL + "],");
+        fw.append(NL).append("],");
         fw.append(NL);
-        fw.append("\"process_id_active\":\"" + this.activeProcess + "\"" + NL);
-        fw.append(NL + "}");
+        fw.append("\"process_id_active\":\"").append(this.activeProcess).append("\"").append(NL);
+        fw.append(NL).append("}");
         fw.append(NL);
 
-        final StringBuffer message = new StringBuffer(200);
-        message.append("Process ID=").append(activeProcess);
-        message.append(" process IDs=").append(processIDs.toString());
-        log.info(message.toString());
+        String message = "Process ID=" + activeProcess
+                + " process IDs=" + processIDs.toString();
+        log.info(message);
 
         return fw.toString();
     }
 
-    private void add(final Node targetEntry, final Node sourceEntry, final boolean countNodes, final boolean countLinks) {
+    private void add(final Node targetEntry, final Node sourceEntry) {
 
         // Add target cluster
         final String targetClusterKey = getClusterKey(targetEntry);
@@ -317,9 +310,7 @@ public class Model {
     }
 
     private void resetCouters() {
-        for (final String key : nodesCount.keySet()) {
-            nodesCount.put(key, 0L);
-        }
+        nodesCount.replaceAll((k, v) -> 0L);
         maximumNodeCount = 1L;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2020, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -59,7 +59,7 @@ public class CallStackAnalyzer {
 
     private static final String INVALID_PROCESS_ID = "----";
 
-    protected static CopyOnWriteArrayList<Integer> allVirtualMachines = new CopyOnWriteArrayList<Integer>();
+    protected static final CopyOnWriteArrayList<Integer> allVirtualMachines = new CopyOnWriteArrayList<>();
 
     /**
      * Attributes
@@ -68,7 +68,7 @@ public class CallStackAnalyzer {
 
     private static String newProcessID = "";
 
-    protected Model model = null;
+    protected final Model model;
 
     /**
      * Constructor
@@ -77,14 +77,12 @@ public class CallStackAnalyzer {
         this.model = model;
     }
 
-    public synchronized static List<Integer> findOtherAttachableJavaVMs() {
+    public synchronized static void findOtherAttachableJavaVMs() {
 
         allVirtualMachines.clear();
 
         List<VirtualMachineDescriptor> vmDesc = VirtualMachine.list();
-        for (int i = 0; i < vmDesc.size(); i++) {
-            VirtualMachineDescriptor descriptor = vmDesc.get(i);
-
+        for (VirtualMachineDescriptor descriptor : vmDesc) {
             final String nextPID = descriptor.id();
 
             final String ownPID = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
@@ -114,16 +112,13 @@ public class CallStackAnalyzer {
 
                     int processId = Integer.parseInt(nextPID);
                     allVirtualMachines.add(processId);
-                } catch (AttachNotSupportedException e) {
-                    log.error(e.getMessage());
-                } catch (IOException e) {
+                } catch (AttachNotSupportedException | IOException e) {
                     log.error(e.getMessage());
                 }
             }
         }
         Collections.sort(allVirtualMachines);
         Collections.reverse(allVirtualMachines);
-        return allVirtualMachines;
     }
 
     public synchronized static void setProcessNewID(String processIdNew) {
@@ -176,10 +171,11 @@ public class CallStackAnalyzer {
                     final Pattern patternBlackList = Pattern.compile(filterBlack);
 
                     try {
-                        final List<Node> entryList = new ArrayList<Node>(10);
+                        final List<Node> entryList = new ArrayList<>(10);
+                        assert hsVm != null;
                         final InputStream in = hsVm.remoteDataDump();
                         final BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                        String line = "";
+                        String line;
                         while ((line = br.readLine()) != null) {
                             if (line.startsWith("\tat ") && line.length() > 10) {
                                 final String fullMethodName = line.substring(4, line.lastIndexOf('(')).trim();
@@ -189,7 +185,7 @@ public class CallStackAnalyzer {
                                         if (split.length > 2) {
                                             final int indexOfMethodName = split.length - 1;
                                             final int indexOfClassName = indexOfMethodName - 1;
-                                            final StringBuffer packageName = new StringBuffer(line.length());
+                                            final StringBuilder packageName = new StringBuilder(line.length());
                                             packageName.append(split[0]);
                                             for (int i = 1; i < indexOfClassName; i++) {
                                                 packageName.append('.').append(split[i]);
@@ -214,7 +210,7 @@ public class CallStackAnalyzer {
                                 }
                             }
                         }
-                        model.append(entryList, true, true);
+                        model.append(entryList);
 
                         br.close();
                         in.close();

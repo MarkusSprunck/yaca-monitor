@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
-Archiver-Version: Plexus Archiver
 
 
 

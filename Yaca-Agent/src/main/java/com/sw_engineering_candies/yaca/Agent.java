@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2020, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -64,22 +64,21 @@ public class Agent {
      */
     public final CallStackAnalyzer analyzer = new CallStackAnalyzer(model);
 
-    private static void parseComandLine(String[] args) {
+    private static void parseCommandLine(String[] args) {
         if (1 == args.length) {
             try {
                 port = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
-                log.warn("The port must be a number.", e);
+                log.warn("The port must be a number.", e.getMessage());
             }
         }
     }
 
     public static void main(final String[] args) {
-        log.info("TEST, v" + VERSION);
-        log.error("Yaca-Agent - (c) 2012-2020 by Markus Sprunck, v" + VERSION);
+        log.info("Yaca-Agent - (c) 2012-2020 by Markus Sprunck, v" + VERSION);
 
         // Change the default port
-        parseComandLine(args);
+        parseCommandLine(args);
 
         // Start analyzer
         Agent agent = new Agent();

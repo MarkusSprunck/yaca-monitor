@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2020, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *

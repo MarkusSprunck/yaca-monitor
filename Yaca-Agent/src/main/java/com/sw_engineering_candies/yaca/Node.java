@@ -31,11 +31,13 @@
 
 package com.sw_engineering_candies.yaca;
 
+import lombok.Data;
+import lombok.ToString;
+
+@Data
+@ToString
 public class Node {
 
-    /**
-     * Attributes
-     */
     private String packageName;
 
     private String className;
@@ -43,45 +45,5 @@ public class Node {
     private String methodName;
 
     private boolean newItem;
-
-    /**
-     * Methods
-     */
-    public boolean isNewItem() {
-        return newItem;
-    }
-
-    public void setNewItem(boolean newItem) {
-        this.newItem = newItem;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(final String packageName) {
-        this.packageName = packageName;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(final String className) {
-        this.className = className;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(final String methodName) {
-        this.methodName = methodName;
-    }
-
-    @Override
-    public String toString() {
-        return "Entry [" + packageName + ", " + className + ", " + methodName + "]";
-    }
 
 }

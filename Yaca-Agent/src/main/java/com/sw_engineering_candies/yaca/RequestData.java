@@ -34,15 +34,10 @@ package com.sw_engineering_candies.yaca;
 import java.io.DataInputStream;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RequestData {
-
-    /**
-     * Constants
-     */
-    private static final Log LOGGER = LogFactory.getLog(RequestData.class);
 
     /**
      * Attributes
@@ -57,7 +52,7 @@ public class RequestData {
     public RequestData(InputStream in) {
 
         try {
-            StringBuffer buffer = new StringBuffer(1000);
+            StringBuilder buffer = new StringBuilder(1000);
             final DataInputStream remoteInput = new DataInputStream(in);
             final byte[] data = new byte[Short.MAX_VALUE];
             int length = remoteInput.read(data, 0, Short.MAX_VALUE);
@@ -74,7 +69,7 @@ public class RequestData {
                 }
             }
         } catch (Exception ex) {
-            LOGGER.warn("Can't parse Header ", ex);
+            log.warn("Can't parse Header ", ex.getMessage());
         }
     }
 

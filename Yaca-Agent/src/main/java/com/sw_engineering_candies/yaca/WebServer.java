@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016, Markus Sprunck <sprunck.markus@gmail.com>
+ * Copyright (C) 2012-2020, Markus Sprunck <sprunck.markus@gmail.com>
  *
  * All rights reserved.
  *
@@ -71,9 +71,7 @@ public class WebServer extends Thread {
     /**
      * Attributes
      */
-    private ClassLoader classLoader = null;
-
-    private Model model = null;
+    private final Model model;
 
     private String options = "";
 
@@ -83,10 +81,6 @@ public class WebServer extends Thread {
     public WebServer(final int port, Model model) {
         this.port = port;
         this.model = model;
-
-        if (classLoader == null) {
-            classLoader = Class.class.getClassLoader();
-        }
     }
 
     private static byte[] readStream(InputStream ins) {
@@ -95,7 +89,7 @@ public class WebServer extends Thread {
             byte[] buffer = new byte[4096];
             ByteArrayOutputStream outs = new ByteArrayOutputStream();
 
-            int read = 0;
+            int read;
             while ((read = ins.read(buffer)) != -1) {
                 outs.write(buffer, 0, read);
             }
@@ -184,11 +178,11 @@ public class WebServer extends Thread {
                     out.close();
                     socket.close();
                 } catch (final IOException e) {
-                    log.warn("Could not close resources : " + e);
+                    log.warn("Could not close resources : " + e.getMessage());
                 }
 
             } catch (final Exception e) {
-                log.warn("Could not handle request: ", e);
+                log.warn("Could not handle request: ", e.getMessage());
             }
         }
 
