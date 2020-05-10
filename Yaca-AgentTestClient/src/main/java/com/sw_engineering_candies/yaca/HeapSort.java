@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.yaca.sw_engineering_candies;
+package com.sw_engineering_candies.yaca;
 
 import java.util.ArrayList;
 

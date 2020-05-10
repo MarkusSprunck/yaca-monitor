@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.yaca.sw_engineering_candies;
+package com.sw_engineering_candies.yaca;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -50,12 +50,9 @@ import javax.swing.JRadioButton;
 import javax.swing.Timer;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * The main class of the application.

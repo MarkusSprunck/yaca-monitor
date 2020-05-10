@@ -31,7 +31,7 @@
                     <finalName>YacaAgentTestClient</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>com.yaca.sw_engineering_candies.YacaAgentTestClient</mainClass>
+                            <mainClass>com.sw_engineering_candies.yaca.YacaAgentTestClient</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
