@@ -6,7 +6,7 @@
 
     <groupId>com.software-engineering-candies</groupId>
     <artifactId>YacaAgent</artifactId>
-    <version>4.0.2</version>
+    <version>4.1.0</version>
 
     <properties>
         <tools.jar.path>${basedir}/lib/tools.jar</tools.jar.path>
@@ -39,7 +39,7 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <outputDirectory>
-                        ${basedir}/dist
+                        ${basedir}/../dist
                     </outputDirectory>
                     <appendAssemblyId>true</appendAssemblyId>
                 </configuration>

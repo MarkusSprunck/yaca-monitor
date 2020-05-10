@@ -91,7 +91,7 @@ public class YacaAgentTestClient {
 	}
 	
 	public static void main(final String[] args) throws IOException {
-		log.info("(c) 2012-2020 by Markus Sprunck, v1.2.0");
+		log.info("(c) 2012-2020 by Markus Sprunck, v4.1.0");
 		
 		final YacaAgentTestClient yacaAgentTest = new YacaAgentTestClient();
 		yacaAgentTest.run();

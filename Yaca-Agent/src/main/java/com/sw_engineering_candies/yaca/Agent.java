@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Agent {
 
-    protected static final String VERSION = "4.0.2";
+    protected static final String VERSION = "4.1.0";
     
     /**
      * The default port should not be used by any other application.
