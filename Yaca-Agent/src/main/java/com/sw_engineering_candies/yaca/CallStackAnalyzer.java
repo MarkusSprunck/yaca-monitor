@@ -46,11 +46,16 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 import lombok.extern.slf4j.Slf4j;
 import sun.tools.attach.HotSpotVirtualMachine;
 
+import org.springframework.stereotype.Component;
+
 /**
  * The class collects call stack data from the VM
  */
 @Slf4j
+@Component
 public class CallStackAnalyzer {
+
+    protected static final CopyOnWriteArrayList<Integer> allVirtualMachines = new CopyOnWriteArrayList<>();
 
     /**
      * Constants
@@ -58,8 +63,6 @@ public class CallStackAnalyzer {
     private static final String NL = System.getProperty("line.separator");
 
     private static final String INVALID_PROCESS_ID = "----";
-
-    protected static final CopyOnWriteArrayList<Integer> allVirtualMachines = new CopyOnWriteArrayList<>();
 
     /**
      * Attributes
@@ -132,7 +135,10 @@ public class CallStackAnalyzer {
         }
     }
 
+
     public void start() {
+
+        log.info("CallStackAnalyzer started");
 
         HotSpotVirtualMachine hsVm = null;
         do {
@@ -224,7 +230,7 @@ public class CallStackAnalyzer {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    log.error("Wait problem ", e);
+                    log.error("Wait problem ", e.getMessage());
                 }
 
             } catch (final AttachNotSupportedException e) {

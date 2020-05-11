@@ -1,10 +1,9 @@
 # Yaca Monitor Project
 
-
 ## Build
 
 ```
-$ mvn clean install
+$ mvn clean package
 ```
 
 ## Run
@@ -12,5 +11,5 @@ $ mvn clean install
 In folder ./dist execute
 
 ```
-$ start.sh
+$ YacaAgent-4.1.0.sh
 ```

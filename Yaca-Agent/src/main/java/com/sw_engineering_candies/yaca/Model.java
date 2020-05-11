@@ -35,11 +35,14 @@ import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.stereotype.Component;
+
 /**
  * The class collects data from dynamic code analysis and provides the result in
  * the JSON format
  */
 @Slf4j
+@Component
 public class Model {
 
     /**
